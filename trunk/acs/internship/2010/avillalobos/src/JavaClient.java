@@ -4,7 +4,7 @@ import java.util.logging.Logger;
 
 
 import alma.acs.container.ContainerServicesBase;
-import alma.JavaContainerError.*;
+import alma.JavaContainerError.wrappers.AcsJContainerServicesEx;
 import alma.acs.component.client.ComponentClient;
 import alma.acs.container.corba.AcsCorba;
 
