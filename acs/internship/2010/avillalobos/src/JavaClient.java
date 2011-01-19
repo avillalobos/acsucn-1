@@ -2,6 +2,8 @@
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.omg.CORBA.Any;
+
 import alma.JavaContainerError.wrappers.AcsJContainerServicesEx;
 import alma.acs.component.client.ComponentClient;
 import alma.acs.container.corba.AcsCorba;
@@ -11,8 +13,7 @@ public class JavaClient extends ComponentClient {
 	private  JavaClient jc;
 	
 	// Constructor of JavaClient using only info for ComponentClient
-	protected JavaClient(Logger logger, String managerLoc, String clientName,
-			AcsCorba externalAcsCorba) throws Exception {
+	protected JavaClient(Logger logger, String managerLoc, String clientName,AcsCorba externalAcsCorba) throws Exception {
 		super(logger, managerLoc, clientName, externalAcsCorba);
 		// TODO Auto-generated constructor stub
 	}
@@ -20,8 +21,15 @@ public class JavaClient extends ComponentClient {
 	public void doSomeStuff() throws AcsJContainerServicesEx{
 		// This is the name of .xml that define the .idl
 		String retornado = (getContainerServices().getComponent("Meteo")).toString();
+		getContainerServices().getComponentNonSticky("Meteo");
+		/*
+		Object list[] = getContainerServices().getComponent("Meteo").getClass().getMethods();
+		for(int i = 0; i < list.length; i++){
+			System.out.println(list[i].toString());
+		}
+		*/
 		System.out.println("retornado = " + retornado);
-        this.jc = (JavaClient) getContainerServices().getComponent("Meteo");
+        //this.jc = (JavaClient) getContainerServices().getComponent("Meteo");
         System.out.println("Obteniendo el componente Meteorologic");
 	}
 
