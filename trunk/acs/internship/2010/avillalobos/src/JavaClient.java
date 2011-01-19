@@ -19,6 +19,8 @@ public class JavaClient extends ComponentClient {
 	
 	public void doSomeStuff() throws AcsJContainerServicesEx{
 		// This is the name of .xml that define the .idl
+		String retornado = (getContainerServices().getComponent("Meteo")).toString();
+		System.out.println("retornado = " + retornado);
         this.jc = (JavaClient) getContainerServices().getComponent("Meteo");
         System.out.println("Obteniendo el componente Meteorologic");
 	}
