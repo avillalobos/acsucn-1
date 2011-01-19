@@ -1,16 +1,14 @@
-
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.omg.CORBA.Any;
-
+import alma.ACS.ROdouble;
+import alma.WeatherData.*;
 import alma.JavaContainerError.wrappers.AcsJContainerServicesEx;
 import alma.acs.component.client.ComponentClient;
 import alma.acs.container.corba.AcsCorba;
 
 public class JavaClient extends ComponentClient {
 
-	private  JavaClient jc;
+	private  Meteorologic jc;
 	
 	// Constructor of JavaClient using only info for ComponentClient
 	protected JavaClient(Logger logger, String managerLoc, String clientName,AcsCorba externalAcsCorba) throws Exception {
@@ -20,16 +18,10 @@ public class JavaClient extends ComponentClient {
 	
 	public void doSomeStuff() throws AcsJContainerServicesEx{
 		// This is the name of .xml that define the .idl
-		String retornado = (getContainerServices().getComponent("Meteo")).toString();
-		getContainerServices().getComponentNonSticky("Meteo");
-		/*
-		Object list[] = getContainerServices().getComponent("Meteo").getClass().getMethods();
-		for(int i = 0; i < list.length; i++){
-			System.out.println(list[i].toString());
-		}
-		*/
-		System.out.println("retornado = " + retornado);
-        //this.jc = (JavaClient) getContainerServices().getComponent("Meteo");
+		this.jc = MeteorologicHelper.narrow(getContainerServices().getComponentNonSticky("Meteo"));
+		this.jc.displayMessage("y desde el cliente te digo, componente CTM!");
+		ROdouble t = this.jc.temperature();
+		System.out.println("la temperatura en el OSF es de " + t.default_value());
         System.out.println("Obteniendo el componente Meteorologic");
 	}
 
@@ -43,6 +35,4 @@ public class JavaClient extends ComponentClient {
 		JavaClient javaclient = new JavaClient(null,managerLoc,clientName, null);
 		javaclient.doSomeStuff();
 	}
-	
-	
 }
