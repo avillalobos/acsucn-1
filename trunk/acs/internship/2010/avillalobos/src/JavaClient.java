@@ -19,7 +19,8 @@ public class JavaClient extends ComponentClient {
 	
 	public double doSomeStuff() throws AcsJContainerServicesEx{
 		// This is the name of .xml that define the .idl
-		this.jc = MeteorologicHelper.narrow(getContainerServices().getComponentNonSticky("Meteo"));
+		this.jc = MeteorologicHelper.narrow(getContainerServices().getComponent("Meteo"));
+		System.out.println("El nombre del container es " + this.getContainerServices().getName());
 		this.jc.displayMessage("y desde el cliente te digo, componente CTM!");
 		ROdouble t = this.jc.temperature();
 		System.out.println("la temperatura en el OSF es de " + t.default_value());
@@ -35,5 +36,6 @@ public class JavaClient extends ComponentClient {
 		String clientName = "Meteorologic";
 		JavaClient javaclient = new JavaClient(null,managerLoc,clientName, null);
 		double d = javaclient.doSomeStuff();
+		System.out.println("La temperatura retornada es de " + d);
 	}
 }
