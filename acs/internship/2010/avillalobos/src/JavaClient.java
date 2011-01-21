@@ -3,11 +3,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
+import alma.maci.cdbtypes.*;
+
 import alma.ACS.ROdouble;
 import alma.WeatherData.*;
 import alma.JavaContainerError.wrappers.AcsJContainerServicesEx;
 import alma.acs.component.client.ComponentClient;
 import alma.acs.container.corba.AcsCorba;
+import alma.acs.container.AcsContainer;
+import alma.acs.container.AcsManagerProxy;
+import alma.maci.*;
+import alma.maci.managerconfig.Manager;
 
 import alma.ACS.ACSComponent;
 import alma.ACS.ACSComponentHelper;
@@ -31,7 +37,7 @@ public class JavaClient extends ComponentClient {
 		// Getting state from ACSComponent
 		ComponentStates state = acscomponent.componentState();
 		System.out.println("El nombre del comnponente es " + this.getContainerServices().getName() + " y el stado del componente es " + state.toString());
-		this.jc.displayMessage("y desde el cliente te digo, componente CTM!");
+		this.jc.displayMessage("   ## Mensaje enviado desde el cliente ##   ");
 		// Getting temperature from JavaClient
 		ROdouble t = this.jc.temperature();
 		System.out.println("la temperatura en el OSF es de " + t.default_value());
@@ -96,6 +102,16 @@ public class JavaClient extends ComponentClient {
 			componentName = br.readLine();
 		}
 	}
+	
+	public void getStateFromContainer(){
+		//AcsManagerProxy acsmgrproxy = new AcsManagerProxy("corbaloc::10.195.17.114:3000/Manager", null, m_logger);
+		Manager mgr = new Manager();
+		Array arr = mgr.getServiceComponents();
+		ArrayItem arri[] = arr.getArrayItem();
+		for(int i = 0; i < arri.length; i++){
+			System.out.println("Array element " + arri[i].get().getString());
+		}
+	}
 
 
 	public static void main(String args[]) throws Exception{
@@ -106,7 +122,8 @@ public class JavaClient extends ComponentClient {
 		JavaClient javaclient = new JavaClient(null,managerLoc,clientName, null);
 		double d = javaclient.doSomeStuff();
 		System.out.println("La temperatura retornada es de " + d);
-		javaclient.TestingNameStatusComponent();
+		//javaclient.TestingNameStatusComponent();
+		javaclient.getStateFromContainer();
 		javaclient.loggerFINEmessage("Exiting from java Client");
 	}
 }
