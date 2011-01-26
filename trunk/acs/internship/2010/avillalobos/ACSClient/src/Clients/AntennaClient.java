@@ -1,5 +1,6 @@
 package Clients;
 
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import alma.ACS.ACSComponent;
@@ -22,9 +23,9 @@ public class AntennaClient extends ACSClient{
 
 
 	@Override
-	public String[] getStatus() {
+	public LinkedList<String> getStatus() {
 		Antenna antenna = null;
-		String report[] = new String[this.Antennas.length];
+		LinkedList<String> report = new LinkedList<String>();
 		for(int i = 0; i < this.Antennas.length; i++){
 			try {
 				//Antenna antenna = AntennaHelper.narrow(getContainerServices().getComponent("CONTROL/DV01"));
@@ -32,11 +33,11 @@ public class AntennaClient extends ACSClient{
 				ACSComponent acscomponent = ACSComponentHelper.narrow(antenna);
 				antenna.getState().toString();
 				 
-				report[i] = "El reporte para la antena " + this.Antennas[i] +" online = " + antenna.getState().toString() + " substatus = " + acscomponent.componentState().toString();
+				report.add("El reporte para la antena " + this.Antennas[i] +" online = " + antenna.getState().toString() + " substatus = " + acscomponent.componentState().toString());
 			} catch (AcsJContainerServicesEx e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				report[i] = "No se pudo obtener informacion de la antenna " + this.Antennas[i];
+				report.add("No se pudo obtener informacion de la antenna " + this.Antennas[i]);
 			}
 		}
 		return report;

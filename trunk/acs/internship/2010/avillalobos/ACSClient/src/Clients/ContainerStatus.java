@@ -1,5 +1,6 @@
 package Clients;
 
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 public class ContainerStatus extends ACSClient{
@@ -11,7 +12,7 @@ public class ContainerStatus extends ACSClient{
 	}
 
 	@Override
-	public String[] getStatus() {
+	public LinkedList<String> getStatus() {
 		// TODO Auto-generated method stub
 		return null;
 	}
