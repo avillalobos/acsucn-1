@@ -3,6 +3,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Logger;
 
+import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CosPropertyService.InvalidPropertyName;
+import org.omg.CosPropertyService.PropertyNotFound;
+
+import si.ijs.maci.ContainerInfo;
+
 import alma.maci.cdbtypes.*;
 
 import alma.ACS.ROdouble;
@@ -12,12 +18,19 @@ import alma.acs.component.client.ComponentClient;
 import alma.acs.container.corba.AcsCorba;
 import alma.acs.container.AcsContainer;
 import alma.acs.container.AcsManagerProxy;
+import alma.exec.operatorbase.portable.ExecRole;
+import alma.exec.operatorbase.portable.MainController;
+import alma.exec.operatormasterclient.OperatorMasterClientLogic;
 import alma.maci.*;
 import alma.maci.managerconfig.Manager;
 
 import alma.ACS.ACSComponent;
 import alma.ACS.ACSComponentHelper;
 import alma.ACS.ComponentStates;
+import alma.ACS.MasterComponent;
+import alma.ACS.MasterComponentHelper;
+import alma.ACSErr.Completion;
+import alma.ACSErr.CompletionHolder;
 
 public class JavaClient extends ComponentClient {
 
@@ -77,6 +90,7 @@ public class JavaClient extends ComponentClient {
 		for(int i = 0; i < 1; i ++){
 			try {
 				ACSComponent acscomponent = ACSComponentHelper.narrow(this.getContainerServices().getComponent(components[i]));
+				
 				status[i][0] = components[i];
 				status[i][1] = acscomponent.componentState().toString();
 				//return acscomponent.componentState().toString();
@@ -106,24 +120,82 @@ public class JavaClient extends ComponentClient {
 	public void getStateFromContainer(){
 		//AcsManagerProxy acsmgrproxy = new AcsManagerProxy("corbaloc::10.195.17.114:3000/Manager", null, m_logger);
 		Manager mgr = new Manager();
+		OperatorMasterClientLogic op = new OperatorMasterClientLogic();
+		initRemoteLogging();
+		//op.start(new MainController.StartupSettings(), "almadev", null);
+		op.getClientConnectivity().getClass().toString();
+		System.out.println(op.getClientConnectivity().getContainerServices().getName());
+		System.out.println("Dato del operatos master client logic  " + op.getClientData().omcNetName.toString());
+		/*
+		ContainerInfo cinfo = new ContainerInfo();
 		Array arr = mgr.getServiceComponents();
 		ArrayItem arri[] = arr.getArrayItem();
 		for(int i = 0; i < arri.length; i++){
 			System.out.println("Array element " + arri[i].get().getString());
 		}
+		*/
+	}
+	
+	public void Something(){
+		//javaclient.TestingNameStatusComponent();
+		//javaclient.getStateFromContainer();
+		/*AcsCorba corba = new AcsCorba(javaclient.m_logger);
+		corba.initCorbaForClient(false);
+		corba.runCorba();
+		//corba.getORB().get_current();
+		 */
+		MyOperatorMasterClientLogic op = new MyOperatorMasterClientLogic();
+		op.start(new MainController.StartupSettings(), "almadev", ExecRole.fromString("Software Developer"));
+		//op.getConnectivity().getContainerServices().toString();
+		System.out.println(op.getClientConnectivity().getMaciInformation().getContainer("bilboContainer").toString());
+	}
+	
+	public void getStateFromSubsystems(){
+		org.omg.CORBA.Object ref = null;
+		MasterComponent masterComp = null;
+		try {
+			ref = getContainerServices().getComponent("CONTROL_MASTER_COMP");
+			masterComp = MasterComponentHelper.narrow(ref);
+			masterComp.get_all_characteristics().get_property_value("status").extract_string();
+		} catch (AcsJContainerServicesEx e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BAD_OPERATION e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (PropertyNotFound e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidPropertyName e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("Cantidad de caracteristicas" + masterComp.get_all_characteristics().get_number_of_properties());
+		System.out.println("Estado actual del subsistema  " + masterComp.componentState().toString());
+		alma.ACS.ROstringSeq baciProperty = masterComp.currentStateHierarchy();
+
+		Completion compl = new Completion(System.currentTimeMillis(), 0, 0, new alma.ACSErr.ErrorTrace[]{});
+		CompletionHolder complHolder = new CompletionHolder(compl);
+		
+		String[] status = baciProperty.get_sync(complHolder);
+		for(int i =0; i < status.length; i++){
+			System.out.println(status[i]);
+		}
 	}
 
 
 	public static void main(String args[]) throws Exception{
+		
 		//String managerLoc = System.getProperty("ACS.manager");
 		String managerLoc = "corbaloc::10.195.17.114:3000/Manager";
 		System.out.println("managerloc = " + managerLoc);
 		String clientName = "ACS Generic Java Client";
 		JavaClient javaclient = new JavaClient(null,managerLoc,clientName, null);
-		double d = javaclient.doSomeStuff();
-		System.out.println("La temperatura retornada es de " + d);
-		//javaclient.TestingNameStatusComponent();
-		javaclient.getStateFromContainer();
+		//double d = javaclient.doSomeStuff();
+		System.out.println("Status from component " + javaclient.getStateFromComponent("CONTROL/DV01"));
+		//System.out.println("La temperatura retornada es de " + d);
+		javaclient.getStateFromSubsystems();
 		javaclient.loggerFINEmessage("Exiting from java Client");
 	}
 }
