@@ -7,8 +7,6 @@ import alma.ACS.ACSComponent;
 import alma.ACS.ACSComponentHelper;
 import alma.Control.Antenna;
 import alma.Control.AntennaHelper;
-import alma.Control.AntennaPOA;
-import alma.ControlExceptions.INACTErrorEx;
 import alma.JavaContainerError.wrappers.AcsJContainerServicesEx;
 
 public class AntennaClient extends ACSClient{
