@@ -1,28 +1,26 @@
 package MainTest;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import Clients.ACSClient;
-import Clients.AntennaClient;
-import Clients.SubsystemClient;
 
 public class PseudoProxy{
 
-	private SubsystemClient sc;
-	public PseudoProxy(){
+	public static void LaunchPrograms() throws IOException{
+		Runtime.getRuntime().exec("konqueror");
 	}
 	/**
 	 * @param args
 	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args){
 		// TODO Auto-generated method stub
 		//String managerLoc = "corbaloc::10.195.17.114:3000/Manager";
 		//ACSClient list[] = new ACSClient[2];
 		//list[0] = new SubsystemClient(null, managerLoc, "ACS Status Client");
 		//list[1] = new AntennaClient(null, managerLoc, "ACS Status Client");
 		//run(list);
-		//Runtime.getRuntime().exec("konqueror");
 		WebServiceClient ws = new WebServiceClient();
 		printStatus(ws.getStatus());
 	}
