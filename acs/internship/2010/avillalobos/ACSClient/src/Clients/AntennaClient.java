@@ -7,6 +7,7 @@ import alma.ACS.ACSComponent;
 import alma.ACS.ACSComponentHelper;
 import alma.Control.Antenna;
 import alma.Control.AntennaHelper;
+import alma.ControlExceptions.INACTErrorEx;
 import alma.JavaContainerError.wrappers.AcsJContainerServicesEx;
 
 public class AntennaClient extends ACSClient{
@@ -28,10 +29,12 @@ public class AntennaClient extends ACSClient{
 			try {
 				//Antenna antenna = AntennaHelper.narrow(getContainerServices().getComponent("CONTROL/DV01"));
 				antenna = AntennaHelper.narrow(getContainerServices().getComponent("CONTROL/"+this.Antennas[i]));
-				ACSComponent acscomponent = ACSComponentHelper.narrow(antenna);
-				antenna.getState().toString();
-				 
-				report.add("El reporte para la antena " + this.Antennas[i] +" online = " + antenna.getState().toString() + " substatus = " + acscomponent.componentState().toString());
+				String Name = this.Antennas[i];
+				String Array = getArray(antenna);
+				String Status = getStatus(antenna);
+				String Substatus = getSubStatus(antenna);
+				String Online = getOnline(antenna);
+				report.add("{Type:Antenna,Name:'"+Name+"',Array:'"+Array+"',Status:'"+Status+"',SubStatus:'"+Substatus+"',Online:'"+Online+"'}");
 			} catch (AcsJContainerServicesEx e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -41,8 +44,30 @@ public class AntennaClient extends ACSClient{
 		return report;
 	}
 	
+	public String getOnline(Antenna antenna){
+		return antenna.getState().toString();
+	}
+	
+	public String getArray(Antenna antenna){
+		try {
+			return antenna.getArray();
+		} catch (INACTErrorEx e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return "Error";
+		}
+	}
+	
+	public String getStatus(Antenna antenna){
+		return antenna.componentState().toString();
+	}
+	
+	public String getSubStatus(Antenna antenna){
+		return antenna.getErrorMessage();
+	}
+	
 	public String getAllAntennas(){
-		return "DV01";
+		return "DV01,DV02,PM03";
 	}
 
 	@Override
