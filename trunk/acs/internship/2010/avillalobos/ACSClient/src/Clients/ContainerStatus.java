@@ -1,13 +1,13 @@
 package Clients;
 
 import java.util.LinkedList;
-import java.util.logging.Logger;
+
+import alma.acs.component.client.AdvancedComponentClient;
 
 public class ContainerStatus extends ACSClient{
 
-	public ContainerStatus(Logger logger, String managerLoc, String clientName)
-			throws Exception {
-		super(logger, managerLoc, clientName);
+	public ContainerStatus(AdvancedComponentClient _client){
+		super(_client);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -17,16 +17,6 @@ public class ContainerStatus extends ACSClient{
 		return null;
 	}
 
-	@Override
-	public void Start() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void Stop() {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 }
