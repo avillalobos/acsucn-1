@@ -26,15 +26,16 @@ public class AlmaStatus extends ACSClient {
 	public String calculateStatus(){
 		HashMap<String,String> SubSystemsStatus = this.SubsystemStatus.getSubSystemsStatus();
 		String SubSystemList[] = this.SubsystemStatus.getSubsystems();
-		int SHUTDWON = 0, OPERATIONAL = 0, STARTING1 = 0, STARTING2 = 0, STOPPING = 0;
+		int SHUTDOWN = 0, OPERATIONAL = 0, STARTING1 = 0, STARTING2 = 0, STOPPING = 0;
 		for(String subsystem : SubSystemList){
 			String status = SubSystemsStatus.get(subsystem);
+			//System.out.println("subsystem " + subsystem + " status " + status);
 			if(status.equalsIgnoreCase("ERROR")){
 				return "ERROR";
 			}else if(status.equalsIgnoreCase("UNAVAILABLE")){
 				return "UNAVAILABLE";
 			}else if(status.equalsIgnoreCase("SHUTDOWN")){
-				SHUTDWON++;
+				SHUTDOWN++;
 			}else if(status.equalsIgnoreCase("OPERATIONAL")){
 				OPERATIONAL++;
 			}
@@ -43,11 +44,11 @@ public class AlmaStatus extends ACSClient {
 				STARTING1++;
 			}else if(status.equalsIgnoreCase("INITIALIZING_PASS1") || status.equalsIgnoreCase("INITIALIZING_PASS2") || status.equalsIgnoreCase("SHUTDOWN") || status.equalsIgnoreCase("ONLINE") || status.equalsIgnoreCase("OPERATIONAL")){
 				STARTING2++; 
-			}else if(status.equalsIgnoreCase("SHUTTINGDOWN_PASS1") || status.equalsIgnoreCase("SHUTTINGDOWN_PASS2") || status.equalsIgnoreCase("SHUTDOWN") || status.equalsIgnoreCase("OPERATIONAL")){
+			}else if(status.equalsIgnoreCase("SHUTTINGDOWN_PASS1") || status.equalsIgnoreCase("PRESHUTDOWN") || status.equalsIgnoreCase("SHUTTINGDOWN_PASS2") || status.equalsIgnoreCase("SHUTDOWN") || status.equalsIgnoreCase("OPERATIONAL")){
 				STOPPING++;
 			}
 		}
-		if(SHUTDWON == SubSystemList.length){
+		if(SHUTDOWN == SubSystemList.length){
 			return "SHUTDOWN";
 		}else if(OPERATIONAL == SubSystemList.length){
 			return "OPERATIONAL";

@@ -61,7 +61,7 @@ public class SubsystemStatus extends ACSClient{
 				}else{
 					status = statusList[1];
 				}
-				this.SubSystemsStatus.put(subsystem, statusList[1]);
+				this.SubSystemsStatus.put(subsystem, status);
 				report.add("{Type:'Subsystem',Name:'"+masterComp.name()+"',CompStat:'"+masterComp.componentState().toString()+"',SubSysStat:'"+status+"'}");
 				
 				//report.add("Estado actual del subsistema  " + this.Subsystems[i] + " = " + masterComp.componentState().toString());

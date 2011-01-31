@@ -27,6 +27,7 @@ public class AntennaStatus extends ACSClient{
 	@Override
 	public LinkedList<String> getStatus() {
 		if(this.AntennaReferences.size() < this.antennasName.length){
+			System.out.println("tratando de obtener nuevas referencias de las antennas ");
 			if(this.isFirstTime){
 				this.isFirstTime = false;
 				return getStatusFromAntennas();
@@ -73,7 +74,8 @@ public class AntennaStatus extends ACSClient{
 				report.add("{Type:'Antenna',Name:'"+Name+"',Array:'"+Array+"',Status:'"+Status+"',SubStatus:'"+Substatus+"',Online:'"+Online+"'}");
 			} catch (INACTErrorEx e) {
 				// TODO Auto-generated catch block
-				report.add("{Type:'AtennaError',Name:'" + antennaName + "',Description:'Unable to get information from " + antennaName + "}'");
+				e.printStackTrace();
+				report.add("{Type:'AtennaError',Name:'" + antennaName + "', Description:'Unable to get information from " + antennaName + "}'");
 			} catch (NullPointerException npe) {
 				report.add("{Type:'AtennaError',Name:'" + antennaName + "', Description:Unable to get information from " + antennaName + " because there is not reference}");
 			} catch (org.omg.CORBA.OBJECT_NOT_EXIST ONE){
