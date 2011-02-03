@@ -20,6 +20,7 @@ public class PseudoProxy{
                 System.out.println(s);
                 path = path + s;
 			}
+			stdInput.close();
 			if(path == null || path.length() == 0){
 				return "Path not found";
 			}else{
@@ -84,7 +85,23 @@ public class PseudoProxy{
 		}else{
 			archivo = new Archivo(pathFile);
 			archivo.Escritura();
-			Publisher publisher = new Publisher(getManagerLoc(),"ACS Client Status",archivo,(long) 1000);
+			boolean connected = false;
+			Publisher publisher = null;
+			do{
+				try{
+					publisher = new Publisher(getManagerLoc(),"ACS Client Status",archivo,(long) 10000);
+					resetFile();
+					Thread.sleep(100);
+					archivo.Escribir("{\"Type\":\"ManagerError\",\"Description\":\"Connected to manager\"}");
+					connected = true;
+				}catch(Exception e){
+					resetFile();
+					Thread.sleep(100);
+					archivo.Escribir("{\"Type\":\"ManagerError\",\"Description\":\""+e.getMessage()+"\"}");
+					connected = false;
+					Thread.sleep(10000);
+				}
+			}while(!connected);
 			Thread publisherThread = new Thread(publisher);
 			publisher.writeFineMessage("The cache file was found on " + pathFile);
 			publisherThread.run();

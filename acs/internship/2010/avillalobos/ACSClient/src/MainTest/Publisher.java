@@ -6,12 +6,14 @@ import java.util.LinkedList;
 
 import alma.acs.commandcenter.meta.Firestarter;
 import alma.acs.component.client.AdvancedComponentClient;
+import alma.acs.logging.ClientLogManager;
 
 import Clients.ACSClient;
-import Clients.AlmaStatus;
-import Clients.AntennaStatus;
-import Clients.CorbaStatus;
-import Clients.SubsystemStatus;
+import Clients.OffLineTool.AlmaStatus;
+import Clients.OffLineTool.AntennaStatus;
+import Clients.OffLineTool.CorbaStatus;
+import Clients.OffLineTool.SubsystemStatus;
+import Clients.OnLineTool.OpServerConnection;
 
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
@@ -24,51 +26,93 @@ public class Publisher implements Runnable{
 	private Long timeToRefresh;
 	private double Mutliplier;
 	private double ExecutedRefresh;
-	private LinkedList<ACSClient> clientes;
+	private LinkedList<ACSClient> offLineClients;
+	private LinkedList<ACSClient> onLineClients;
+	private OpServerConnection opserver;
+	private boolean OnLineActivated;
+	private boolean AcsOnline;
 	
-	public Publisher(String managerLoc, String clientName, Archivo _archivo, Long refresh){
+	public Publisher(String managerLoc, String clientName, Archivo _archivo, Long refresh) throws Exception{
 		this.archivo = _archivo;
 		this.timeToRefresh = refresh;
 		this.ExecutedRefresh = 0;
 		this.Mutliplier = 1;
 		try {
-			this.client = new AdvancedComponentClient(null, managerLoc, clientName);
+			this.client = new AdvancedComponentClient(ClientLogManager.getAcsLogManager().getLoggerForApplication(clientName, false), managerLoc, clientName);
+			this.opserver = new OpServerConnection(this.client,clientName,"IDL:alma/exec/Executive:1.0");
 			this.firestarter = new Firestarter(clientName, null, managerLoc);
-			createClients();
+			// its necessary to have both kind of clients, because if one falls, the other can replace
+			createOffLineClients();
+			createOnLineClients();
+			this.AcsOnline = true;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			this.AcsOnline = false;
+			throw new Exception("Failed connection with manager, we must to try again");
 		}
 	}
 	
-	private void createClients(){
-		this.clientes= new LinkedList<ACSClient>();
+	private void createOnLineClients(){
+		this.onLineClients = new LinkedList<ACSClient>();
+		this.onLineClients.add(this.opserver);
+	}
+	
+	private void createOffLineClients(){
+		this.offLineClients= new LinkedList<ACSClient>();
 		SubsystemStatus sss =new SubsystemStatus(this.client); 
-		clientes.add(sss);
-		clientes.add(new AntennaStatus(this.client));
-		clientes.add(new CorbaStatus(this.client,this.firestarter));
-		clientes.addLast(new AlmaStatus(this.client, sss));
+		offLineClients.add(sss);
+		offLineClients.add(new AntennaStatus(this.client,"tcp://tmc-services.aiv.alma.cl:61616"));
+		offLineClients.add(new CorbaStatus(this.client,this.firestarter));
+		offLineClients.addLast(new AlmaStatus(this.client, sss));
 	}
 	
+	// This method is called on run(), because this is a thread that run until stop =D
 	public LinkedList<String> getStatus(){
+		LinkedList<ACSClient> Status = getProviders();
+		// getting information, its doesn't matter if the information is Online or Offline
 		LinkedList<String> report = new LinkedList<String>();
-		report.add("{Type:'ReportInfo', Date:'"+getDate()+"',Iteration:'"+ this.Mutliplier + " * " + this.ExecutedRefresh + "',");
-		for(ACSClient acs : clientes){
-			report.addAll(acs.getStatus());
+		report.add("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+getDate()+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[");
+		if (!isAcsOnline()) {
+			report.add("\"Type:\"AcsError\",\"Description\":\"Unable to connect to manager, so we suppose that ACS is down\"}");
+			for (ACSClient acs : Status) {
+				if(acs instanceof CorbaStatus || acs instanceof AlmaStatus){
+					report.addAll(acs.getStatus());
+				}
+			}
+		} else {
+			for (ACSClient acs : Status) {
+				report.addAll(acs.getStatus());
+			}
 		}
-		report.add("}");
+		report.add("]}");
 		return report;
 	}
 	
-	public void writeWarningMessage(String msg){
+	// The provider could be online or offline clients
+	private LinkedList<ACSClient> getProviders(){
+		
+		LinkedList<ACSClient> Status = new LinkedList<ACSClient>();
+		if(this.opserver == null){
+			this.OnLineActivated = false;
+		}else if(this.opserver.isOpserverOnline()){
+			Status.addAll(this.onLineClients);
+			this.OnLineActivated = true;
+		}else{
+			Status.addAll(this.offLineClients);
+			this.OnLineActivated = false;
+		}
+		
+		return Status;
+	}
+	
+	protected void writeWarningMessage(String msg){
 		this.client.getContainerServices().getLogger().warning(msg);
 	}
 	
-	public void writeFineMessage(String msg){
+	protected void writeFineMessage(String msg){
 		this.client.getContainerServices().getLogger().info(msg);
 	}
 	
-	public void writeInfoMessage(String msg){
+	protected void writeInfoMessage(String msg){
 		this.client.getContainerServices().getLogger().fine(msg);
 	}
 
@@ -82,26 +126,32 @@ public class Publisher implements Runnable{
 			}
 			this.ExecutedRefresh++;
 			try {
-				System.out.println("Status was written on file " + this.archivo.getPath() + " " + this.Mutliplier + " * " + this.ExecutedRefresh + " times");
+				LinkedList<String> report = getStatus();
 				resetFile();
-				archivo.Escribir(getStatus());
+				Thread.sleep(100);
+				archivo.Escribir(report);
 				writeInfoMessage("Status was written on file " + this.archivo.getPath() + " " + this.Mutliplier + " * " + this.ExecutedRefresh + " times");
-				Thread.sleep(this.timeToRefresh);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block	
-				//e.printStackTrace();
+				e.printStackTrace();
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
-				//e.printStackTrace();
+				e.printStackTrace();
 				createCacheFile();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				//e.printStackTrace();
+				e.printStackTrace();
 				createCacheFile();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				createCacheFile();
+			}
+			try {
+				Thread.sleep(this.timeToRefresh);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -134,7 +184,10 @@ public class Publisher implements Runnable{
 	    Calendar cal = Calendar.getInstance();
 	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy'/'MM'/'dd 'at' hh:mm:ss z");
 	    return sdf.format(cal.getTime());
-
-	  }
+	}
+	
+	private boolean isAcsOnline(){
+		return this.AcsOnline;
+	}
 	
 }
