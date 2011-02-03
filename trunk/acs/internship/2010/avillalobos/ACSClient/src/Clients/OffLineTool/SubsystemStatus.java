@@ -16,7 +16,6 @@ import alma.ACSErr.CompletionHolder;
 import alma.JavaContainerError.wrappers.AcsJContainerServicesEx;
 import alma.acs.component.client.AdvancedComponentClient;
 
-
 public class SubsystemStatus extends ACSClient{
 	
 	private String[] subsystemsList;
@@ -41,6 +40,8 @@ public class SubsystemStatus extends ACSClient{
 				writeInfoMessage("could't retrieve information from subsystem " + subsystem +" because of AcsJContainerServicesEx exception");
 			} catch (BAD_OPERATION e) {
 				writeInfoMessage("could't retrieve information from subsystem " + subsystem +" because of Bad operation exception");				
+			} catch (Exception e){
+				System.out.println("Exception capturada " + e.getCause());
 			}
 		}
 	}
@@ -115,7 +116,9 @@ public class SubsystemStatus extends ACSClient{
 				}
 			} catch (AcsJContainerServicesEx e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
+			} catch (Exception e){
+				
 			}
 		}
 	}

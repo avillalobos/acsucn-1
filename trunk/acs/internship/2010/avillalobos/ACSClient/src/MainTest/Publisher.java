@@ -30,38 +30,39 @@ public class Publisher implements Runnable{
 	private LinkedList<ACSClient> onLineClients;
 	private OpServerConnection opserver;
 	private boolean OnLineActivated;
-	private boolean AcsOnline;
+	private boolean OpServerOnline;
 	
-	public Publisher(String managerLoc, String clientName, Archivo _archivo, Long refresh) throws Exception{
+	public Publisher(String managerLoc, String _clientName, Archivo _archivo, Long refresh) throws Exception{
 		this.archivo = _archivo;
 		this.timeToRefresh = refresh;
 		this.ExecutedRefresh = 0;
 		this.Mutliplier = 1;
 		try {
-			this.client = new AdvancedComponentClient(ClientLogManager.getAcsLogManager().getLoggerForApplication(clientName, false), managerLoc, clientName);
-			this.opserver = new OpServerConnection(this.client,clientName,"IDL:alma/exec/Executive:1.0");
-			this.firestarter = new Firestarter(clientName, null, managerLoc);
+			this.client = new AdvancedComponentClient(ClientLogManager.getAcsLogManager().getLoggerForApplication(_clientName, false), managerLoc, _clientName);
+			this.opserver = new OpServerConnection(this.client,_clientName,"IDL:alma/exec/Executive:1.0");
+			this.firestarter = new Firestarter(_clientName, null, managerLoc);
 			// its necessary to have both kind of clients, because if one falls, the other can replace
 			createOffLineClients();
 			createOnLineClients();
-			this.AcsOnline = true;
+			this.OpServerOnline = true;
 		} catch (Exception e) {
-			this.AcsOnline = false;
+			this.OpServerOnline = false;
 			throw new Exception("Failed connection with manager, we must to try again");
 		}
 	}
 	
-	private void createOnLineClients(){
+	private void createOnLineClients()throws alma.maciErrType.wrappers.AcsJCannotGetComponentEx{ 
 		this.onLineClients = new LinkedList<ACSClient>();
+		this.onLineClients.add(new CorbaStatus(this.client, this.firestarter));
 		this.onLineClients.add(this.opserver);
 	}
 	
-	private void createOffLineClients(){
-		this.offLineClients= new LinkedList<ACSClient>();
-		SubsystemStatus sss =new SubsystemStatus(this.client); 
+	private void createOffLineClients() throws alma.maciErrType.wrappers.AcsJCannotGetComponentEx{
+		this.offLineClients = new LinkedList<ACSClient>();
+		SubsystemStatus sss = new SubsystemStatus(this.client);
 		offLineClients.add(sss);
 		offLineClients.add(new AntennaStatus(this.client,"tcp://tmc-services.aiv.alma.cl:61616"));
-		offLineClients.add(new CorbaStatus(this.client,this.firestarter));
+		offLineClients.add(new CorbaStatus(this.client, this.firestarter));
 		offLineClients.addLast(new AlmaStatus(this.client, sss));
 	}
 	
@@ -71,14 +72,21 @@ public class Publisher implements Runnable{
 		// getting information, its doesn't matter if the information is Online or Offline
 		LinkedList<String> report = new LinkedList<String>();
 		report.add("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+getDate()+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[");
-		if (!isAcsOnline()) {
-			report.add("\"Type:\"AcsError\",\"Description\":\"Unable to connect to manager, so we suppose that ACS is down\"}");
+		// this variable was actualized when we call to getProviders()
+		if (!this.OpServerOnline) {
+			report.add("\"Type:\"OpServerError\",\"Description\":\"Unable to connect to opserver, so we will use offline information\"}");
+			if(isAcsOnline()){
+				report.add("\"Type:\"ACSStatus\",\"Status\":\"Ok\"}");
+			}else{
+				report.add("\"Type:\"ACSStatus\",\"Status\":\"Down\"}");
+			}
 			for (ACSClient acs : Status) {
-				if(acs instanceof CorbaStatus || acs instanceof AlmaStatus){
+				if(!(acs instanceof AntennaStatus)){
 					report.addAll(acs.getStatus());
 				}
 			}
 		} else {
+			
 			for (ACSClient acs : Status) {
 				report.addAll(acs.getStatus());
 			}
@@ -93,7 +101,8 @@ public class Publisher implements Runnable{
 		LinkedList<ACSClient> Status = new LinkedList<ACSClient>();
 		if(this.opserver == null){
 			this.OnLineActivated = false;
-		}else if(this.opserver.isOpserverOnline()){
+			Status.addAll(this.offLineClients);
+		}else if(isOpServerOnline()){
 			Status.addAll(this.onLineClients);
 			this.OnLineActivated = true;
 		}else{
@@ -127,6 +136,7 @@ public class Publisher implements Runnable{
 			this.ExecutedRefresh++;
 			try {
 				LinkedList<String> report = getStatus();
+				System.out.println("######## Size report = " + report.size());
 				resetFile();
 				Thread.sleep(100);
 				archivo.Escribir(report);
@@ -186,8 +196,13 @@ public class Publisher implements Runnable{
 	    return sdf.format(cal.getTime());
 	}
 	
+	private boolean isOpServerOnline(){
+		this.OpServerOnline = this.opserver.isOpserverOnline();
+		return this.OpServerOnline;
+	}
+	
 	private boolean isAcsOnline(){
-		return this.AcsOnline;
+		return false;
 	}
 	
 }

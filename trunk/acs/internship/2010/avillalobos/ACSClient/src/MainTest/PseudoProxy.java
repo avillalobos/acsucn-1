@@ -92,12 +92,15 @@ public class PseudoProxy{
 					publisher = new Publisher(getManagerLoc(),"ACS Client Status",archivo,(long) 10000);
 					resetFile();
 					Thread.sleep(100);
-					archivo.Escribir("{\"Type\":\"ManagerError\",\"Description\":\"Connected to manager\"}");
+					archivo.Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Up\"}");
 					connected = true;
 				}catch(Exception e){
 					resetFile();
 					Thread.sleep(100);
 					archivo.Escribir("{\"Type\":\"ManagerError\",\"Description\":\""+e.getMessage()+"\"}");
+					archivo.Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Down\"}");
+					archivo.Escribir("{\"Type\":\"AlmaStatus\",\"Status\":\"Down\"}");
+					archivo.Escribir("{\"Type\":\"OpServer\",\"Status\":\"Down\"}");
 					connected = false;
 					Thread.sleep(10000);
 				}

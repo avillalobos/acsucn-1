@@ -61,10 +61,11 @@ public class ServerClient extends OperatorClientImpl {
 		//pwriter.printf("%s Alma Status: %s%n", s.status);
 	}
 
+	// The manager status represent the ACS status, so, if i can't connect with manager, represent that ACS is down
 	@Override
 	public void receiveManager (ServantstatusStruct[] structs, ReceiveType type) {
 		this.ManagerStatus.clear();
-		this.ManagerStatus.put("Status", "{\"Type\":\"ManagerStatus\",\"Status changed\":\""+structs[0].status.toString()+"\"},");
+		this.ManagerStatus.put("Status", "{\"Type\":\"ACSStatus\",\"Status\":\""+structs[0].status.toString()+"\"},");
 	}
 
 	@Override
@@ -162,10 +163,10 @@ public class ServerClient extends OperatorClientImpl {
 	
 	public LinkedList<String> getStatus(){
 		LinkedList<String> report = new LinkedList<String>();
+		report.addAll(generateReport(this.ManagerStatus));
 		report.addAll(generateReport(this.AlmaStatus));
 		report.addAll(generateReport(this.SubSystemStatus));
 		report.addAll(generateReport(this.AntennaStatus));
-		report.addAll(generateReport(this.ManagerStatus));
 		report.addAll(generateReport(this.ComponentStatus));
 		report.addAll(generateReport(this.ContainerStatus));
 		return report;
