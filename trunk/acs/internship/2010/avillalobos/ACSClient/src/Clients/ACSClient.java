@@ -12,4 +12,15 @@ public abstract class ACSClient{
 	}
 	public abstract LinkedList<String> getStatus();
 	
+	public void writeInfoMessage(String msg){
+		this.client.getContainerServices().getLogger().info(msg);
+	}
+	
+	public void writeWarningMessage(String msg){
+		this.client.getContainerServices().getLogger().warning(msg);
+	}
+	
+	public void writeFineMessage(String msg){
+		this.client.getContainerServices().getLogger().info(msg);
+	}
 }
