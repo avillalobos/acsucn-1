@@ -14,22 +14,80 @@ import alma.exec.ServantstatusStruct;
 import alma.exec.SubsystemStruct;
 import alma.exec.operatorbase.client.teamwork.auxiliary.OperatorClientImpl;
 
+/**
+ * This class is a listener of opserver, so the opserver send information to this listener and the listener
+ * save the information on the corresponding HashMap, is there is not new information, then the status to display
+ * is the same of the last iteration
+ * 
+ * @author mschilling
+ */
 public class ServerClient extends OperatorClientImpl {
 	
+	/**
+	 * @param clientName This variable indicate the name with the client will be registered
+	 */
 	private String clientName;
+	
+	/**
+	 * @param AlmaStatus This hashmap save the information of Alma from opserver, the key of this
+	 * hashmap is "Status" and the value is the Status of Alma software but on json format
+	 */
 	private HashMap<String,String> AlmaStatus;
+	
+	/**
+	 * @param AntennaStatus This hashmap save the information of all antennas, this information come from
+	 * opserver, the key of this hashmap is the name of the antenna and the value is the status of the antenna
+	 * on json format
+	 */
 	//              Name  , Status
 	private HashMap<String,String> AntennaStatus;
+	
+	/**
+	 * @param ManagerStatus This hashmap contains the information of manager status, this information come from 
+	 * opserver, the key of this hashmap is "Status" and the value represent the status of the manager (ACS) on
+	 * JSON format
+	 */
 	//              Status,value
 	private HashMap<String,String> ManagerStatus;
+	
+	/**
+	 * @param ComponentStatus This hashmap contains the information of ACS component, this information come from 
+	 * opserver, the key of this hashmap is the name of component and the value represent the status of those components on
+	 * JSON format
+	 */
 	//              Name  ,Status
 	private HashMap<String,String> ComponentStatus;
+	
+	/**
+	 * @param SubSystemStatus This hashmap contains the information of subsystems, this information come from 
+	 * opserver, the key of this hashmap is the name of the subsystem and the value represent the status of each subsystems on
+	 * JSON format
+	 */
 	//              Name  ,Status
 	private HashMap<String,String> SubSystemStatus;
+	
+	/**
+	 * @param ContainerStatus This hashmap contains the information of all containers, this information come from 
+	 * opserver, the key of this hashmap is container's name and the value represent the status of each container on
+	 * JSON format
+	 */
 	//              Name  ,Status
 	private HashMap<String,String> ContainerStatus;
+	
+	/**
+	 * @param oldContainerStatus This variable is used to make the diff between the new container information and old
+	 * container information, if there is not changed, then no containers is down, if on the new container information 
+	 * there is less containers than old container status, then a container is down, if on new container information 
+	 * there is more containers than the old container status, then there is a new container.
+	 */
 	private HashMap<String,String> oldContainerStatus;
 	
+	/**
+	 * This is the constructor of ServerClient, and just receive the name that will identify this client. On the constructor
+	 * all the HashMaps has been initialized and are ready to be used.
+	 * 
+	 * @param clientName The name of the client
+	 */
 	public ServerClient(String clientName){
 		this.AlmaStatus = new HashMap<String,String>();
 		this.AntennaStatus = new HashMap<String,String>();
@@ -40,17 +98,29 @@ public class ServerClient extends OperatorClientImpl {
 		this.oldContainerStatus = new HashMap<String,String>();
 	}
 	
+	/**
+	 * This method indicate the name of the client
+	 * 
+	 * @param A string with the name of this client
+	 */
 	@Override
 	public String name () {
 		return clientName;
 	}
 
+	/**
+	 * This method override the acceptMessage from OperatorClientImpl and receive all the new information from 
+	 * opserver
+	 */
 	@Override
 	public void acceptMessage (String sender, boolean broadcast, String message) {
 		
 		//pwriter.printf("%s Message: %s: %s%n", time(), sender, message);
 	}
 
+	/**
+	 * This method is override from OperatorClientImpl and receive all the new information from opserver
+	 */
 	public void receiveAlma (AlmastatusStruct[] structs, ReceiveType type) {
 		// Anything that come here, must to be updated
 		this.AlmaStatus.clear();
@@ -161,6 +231,7 @@ public class ServerClient extends OperatorClientImpl {
 		}
 	}
 	
+	/*
 	public LinkedList<String> getStatus(){
 		LinkedList<String> report = new LinkedList<String>();
 		report.addAll(generateReport(this.ManagerStatus));
@@ -171,6 +242,7 @@ public class ServerClient extends OperatorClientImpl {
 		report.addAll(generateReport(this.ContainerStatus));
 		return report;
 	}
+	*/
 	
 	/*
 	 * ####################################################################################################
@@ -186,6 +258,32 @@ public class ServerClient extends OperatorClientImpl {
 			report.add(e.getValue());
 		}
 		return report;
+	}
+	
+	public LinkedList<String> getStatusList(String NameOfStatus){
+		if(NameOfStatus.equalsIgnoreCase("ACSStatus")){
+			return generateReport(this.ManagerStatus);
+		}else if(NameOfStatus.equalsIgnoreCase("AlmaStatus")){
+			return generateReport(this.AlmaStatus);
+		}else if(NameOfStatus.equalsIgnoreCase("AntennaStatus")){
+			return generateReport(this.AntennaStatus);
+		}else if(NameOfStatus.equalsIgnoreCase("ContainerStatus")){
+			return generateReport(this.ContainerStatus);
+		}else if(NameOfStatus.equalsIgnoreCase("CorbaStatus")){
+			LinkedList<String> failed = new LinkedList<String>();
+			failed.add("{\"Type\":\""+NameOfStatus+"Error\",\"Description\":\"Unable to get information to the requested type\"},");
+			return failed;
+		}else if(NameOfStatus.equalsIgnoreCase("SubsystemStatus")){
+			return generateReport(this.SubSystemStatus);
+		}else{
+			LinkedList<String> failed = new LinkedList<String>();
+			failed.add("{\"Type\":\""+NameOfStatus+"Error\",\"Description\":\"Unable to get information to the requested type\"},");
+			return failed;
+		}
+	}
+
+	public HashMap<String, String> getAntennaStatus() {
+		return this.AntennaStatus;
 	}
 
 }
