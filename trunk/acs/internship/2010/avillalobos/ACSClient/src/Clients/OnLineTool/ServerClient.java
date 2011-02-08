@@ -121,25 +121,30 @@ public class ServerClient extends OperatorClientImpl {
 	/**
 	 * This method is override from OperatorClientImpl and receive all the new information from opserver
 	 */
-	public void receiveAlma (AlmastatusStruct[] structs, ReceiveType type) {
+	public synchronized void receiveAlma (AlmastatusStruct[] structs, ReceiveType type) {
+		System.out.println("\n\t ## Incomming message from opserver to Alma status ## \n");
 		// Anything that come here, must to be updated
 		this.AlmaStatus.clear();
 		this.AlmaStatus.put("Status", "{\"Type\":\"AlmaStatus\",\"Status\":\""+structs[0].status.toString()+"\"},");
-		//AlmastatusStruct s = structs[0];
-		//System.out.println(s.status.toString());
-		//this.report.add("{\"Type\":\"AlmaStatus\",\"Status\":\""+s.status.toString()+"\"},");
-		//pwriter.printf("%s Alma Status: %s%n", s.status);
 	}
 
 	// The manager status represent the ACS status, so, if i can't connect with manager, represent that ACS is down
 	@Override
-	public void receiveManager (ServantstatusStruct[] structs, ReceiveType type) {
+	public synchronized void receiveManager (ServantstatusStruct[] structs, ReceiveType type) {
+		System.out.println("\n\t ## Incomming message from opserver to Manager status ## \n");
 		this.ManagerStatus.clear();
 		this.ManagerStatus.put("Status", "{\"Type\":\"ACSStatus\",\"Status\":\""+structs[0].status.toString()+"\"},");
 	}
 
 	@Override
-	public void receiveComponents (ComponentStruct[] structs, ReceiveType type) {
+	public synchronized void receiveComponents (ComponentStruct[] structs, ReceiveType type) {
+		try {
+			wait();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("\n\t ## Incomming message from opserver to Components Status ## \n");
 		if(type == ReceiveType.TOTAL){
 			this.ComponentStatus.clear();
 			for (ComponentStruct s : structs){
@@ -153,10 +158,12 @@ public class ServerClient extends OperatorClientImpl {
 			System.out.println("What the hell!!!!");
 			// what!!!
 		}
+		notify();
 	}
 
 	@Override
-	public void receiveSubsystems (SubsystemStruct[] structs, ReceiveType type) {
+	public synchronized void receiveSubsystems (SubsystemStruct[] structs, ReceiveType type) {
+		System.out.println("\n\t ## Incomming message from opserver to subsystems status ## \n");
 		if(type == ReceiveType.TOTAL){
 			this.SubSystemStatus.clear();
 			String status = null;
@@ -185,47 +192,48 @@ public class ServerClient extends OperatorClientImpl {
 	}
 
 	
-	// Escribir codigo para cuando un container esta caido
 	@Override
-	public void receiveActiveContainers (NameStruct[] structs, ReceiveType type) {	
-		if(type == ReceiveType.TOTAL){
+	public synchronized void receiveActiveContainers (NameStruct[] structs, ReceiveType type) {
+		System.out.println("\n\t ## Incomming message from opserver to Active Containers ## \n");
+		if (type == ReceiveType.TOTAL) {
 			this.ContainerStatus.clear();
-			for (NameStruct s : structs){
-				this.ContainerStatus.put(s.name, "{\"Type\":\"ContainerStatus\",\"Name\":\""+s.name+"\",\"Status\":\"Ok\"},");
+			for (NameStruct s : structs) {
+				this.ContainerStatus.put(s.name,"{\"Type\":\"ContainerStatus\",\"Name\":\"" + s.name+ "\",\"Status\":\"Ok\"},");
 			}
-			
-		}else if(type == ReceiveType.DIFF){
-			for (NameStruct s : structs){
-				this.ContainerStatus.put(s.name, "{\"Type\":\"ContainerStatus\",\"Name\":\""+s.name+"\",\"Status\":\"Ok\"},");
+
+		} else if (type == ReceiveType.DIFF) {
+			for (NameStruct s : structs) {
+				this.ContainerStatus.put(s.name,"{\"Type\":\"ContainerStatus\",\"Name\":\"" + s.name+ "\",\"Status\":\"Ok\"},");
 			}
-			
-		}else{
+
+		} else {
 			System.out.println("What the hell!!!!");
 			// what!!!
 		}
-		Collection<Entry<String,String>> diff = this.oldContainerStatus.entrySet();
-		for(Entry<String,String> e : diff){
-			if(!this.ContainerStatus.containsKey(e.getKey()) && !this.ContainerStatus.containsValue("{\"Type\":\"ContainerStatus\",\"Name\":\""+e.getKey()+"\",\"Status\":\"Ok\"},")){
-				this.ContainerStatus.put(e.getKey(), "{\"Type\":\"ContainerStatus\",\"Name\":\""+e.getKey()+"\",\"Status\":\"No such Container\"},");
+		Collection<Entry<String, String>> diff = this.oldContainerStatus.entrySet();
+		for (Entry<String, String> e : diff) {
+			if (!this.ContainerStatus.containsKey(e.getKey()) && !this.ContainerStatus.containsValue("{\"Type\":\"ContainerStatus\",\"Name\":\"" + e.getKey() + "\",\"Status\":\"Ok\"},")) {
+				this.ContainerStatus.put(e.getKey(),"{\"Type\":\"ContainerStatus\",\"Name\":\""	+ e.getKey() + "\",\"Status\":\"No such Container\"},");
 			}
 		}
-		
+
 		this.oldContainerStatus.clear();
 		this.oldContainerStatus.putAll(this.ContainerStatus);
 	}
 	//protected HashSet<String> containers = new HashSet<String>();
 	
-	public void receiveAntennas (AntennaStruct[] structs, ReceiveType type) {
-		if(type == ReceiveType.TOTAL){
+	public synchronized void receiveAntennas (AntennaStruct[] structs, ReceiveType type) {
+		System.out.println("\n\t ## Incomming message from opserver to Antenna Status ## \n");
+		if (type == ReceiveType.TOTAL) {
 			this.AntennaStatus.clear();
-			for (AntennaStruct s : structs){
-				this.AntennaStatus.put(s.antennaName, "{\"Type\":\"AntennaStatus\",\"Name\":\""+s.antennaName+"\",\"Array\":\""+s.arrayName+"\",\"Status\":\""+s.antennasState.toString()+"\",\"SubStatus\":\""+s.antennaSubstate.toString()+"\",\"Online\":\""+s.antennaMode+"\"},");
+			for (AntennaStruct s : structs) {
+				this.AntennaStatus.put(s.antennaName,"{\"Type\":\"AntennaStatus\",\"Name\":\"" + s.antennaName + "\",\"Array\":\"" + s.arrayName + "\",\"Status\":\"" + s.antennasState.toString() + "\",\"SubStatus\":\"" + s.antennaSubstate.toString() + "\",\"Online\":\"" + s.antennaMode + "\"},");
 			}
-		}else if(type == ReceiveType.DIFF){
-			for (AntennaStruct s : structs){
-				this.AntennaStatus.put(s.antennaName,"{\"Type\":\"AntennaStatus\",\"Name\":\""+s.antennaName+"\",\"Array\":\""+s.arrayName+"\",\"Status\":\""+s.antennasState.toString()+"\",\"SubStatus\":\""+s.antennaSubstate.toString()+"\",\"Online\":\""+s.antennaMode+"\"},");
+		} else if (type == ReceiveType.DIFF) {
+			for (AntennaStruct s : structs) {
+				this.AntennaStatus.put(s.antennaName,"{\"Type\":\"AntennaStatus\",\"Name\":\"" + s.antennaName + "\",\"Array\":\"" + s.arrayName + "\",\"Status\":\"" + s.antennasState.toString() + "\",\"SubStatus\":\"" + s.antennaSubstate.toString() + "\",\"Online\":\"" + s.antennaMode + "\"},");
 			}
-		}else{
+		} else {
 			System.out.println("What the hell!!!!");
 			// what!!!
 		}
@@ -284,6 +292,16 @@ public class ServerClient extends OperatorClientImpl {
 
 	public HashMap<String, String> getAntennaStatus() {
 		return this.AntennaStatus;
+	}
+	
+	public void CleanAllInformation(){
+		this.AlmaStatus.clear();
+		this.AntennaStatus.clear();
+		this.ComponentStatus.clear();
+		this.ContainerStatus.clear();
+		this.ManagerStatus.clear();
+		this.SubSystemStatus.clear();
+		this.oldContainerStatus.clear();
 	}
 
 }

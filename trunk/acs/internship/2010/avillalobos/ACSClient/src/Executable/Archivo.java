@@ -335,6 +335,8 @@ public class Archivo {
         }
     }
 
+    private boolean fromEsciribirLista = false;
+    
     /**
      * Método que Escribe una linea de tipo String en el archivo
      *
@@ -345,7 +347,12 @@ public class Archivo {
      * valido de archivo para ser usado
      * @exception IOException Si el ocurrio un error en el flujo de datos entre el archivo
      */
-    public void Escribir(String linea) throws IOException, FileNotFoundException, Exception {
+    public void Escribir(String linea, boolean overwrite) throws IOException, FileNotFoundException, Exception {
+    	if(!fromEsciribirLista && overwrite){
+    		this.Reset();
+    		Close(true);
+    		Escritura();
+    	}
         if (this.file == null || !this.file.exists()) {
             throw new FileNotFoundException("El archivo ha sido removido de su ubicación original o no ha sido creado mediante una ruta especifica, por lo tanto actualemnte el archivo no es accesible, regrese el archivo al destino inicial o cree un nuevo archivo");
         } else {
@@ -426,6 +433,7 @@ public class Archivo {
      * @exception IOException Si el ocurrio un error en el flujo de datos entre el archivo
      */
     public void Escribir(LinkedList<String> Lista) throws FileNotFoundException, IOException, Exception {
+    	this.fromEsciribirLista = true;
         if (this.file == null || !this.file.exists()) {
             throw new FileNotFoundException("El archivo ha sido removido de su ubicación original o no ha sido creado mediante una ruta especifica, por lo tanto actualemnte el archivo no es accesible, regrese el archivo al destino inicial o cree un nuevo archivo");
         } else {
@@ -436,12 +444,13 @@ public class Archivo {
             if (this.Close(true) && this.Escritura()) {
                 Iterator<String> i = Lista.iterator();
                 while (i.hasNext()) {
-                    this.Escribir(i.next());
+                    this.Escribir(i.next(),false);
                 }
             } else {
                 throw new Exception("El archivo no pudo ser reiniciado o bien no pudo ser decladaro como de Escritura");
             }
         }
+        this.fromEsciribirLista = false;
     }
 
     /**

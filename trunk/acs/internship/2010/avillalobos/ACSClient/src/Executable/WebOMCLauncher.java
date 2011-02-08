@@ -61,7 +61,7 @@ public class WebOMCLauncher{
 	 */
 	public static void resetFile(String fileName){
 		// the command line to execute on bash
-		String cmd[] = new String[]{"bash","-c","cat /dev/null > $AXIS2_HOME/WebOMCFiles/"+fileName};
+		String cmd[] = new String[]{"bash","-c","echo '' > $AXIS2_HOME/WebOMCFiles/"+fileName};
 		try {
 			Runtime.getRuntime().exec(cmd);
 			Thread.sleep(100);
@@ -185,6 +185,8 @@ public class WebOMCLauncher{
 		if (filePath.equalsIgnoreCase("Path not found")	|| filePath.equalsIgnoreCase("Unable to recover path")) {
 			createFile(fileName);
 			filePath = recoverPathFile(fileName);
+		}else{
+			resetFile(fileName);
 		}
 		Archivo archivo = new Archivo(filePath);
 		try {
@@ -244,7 +246,7 @@ public class WebOMCLauncher{
 			System.out.println("Please put an correct IPV4 as second argument");
 			System.exit(1);
 		} else if (!isNumber(args[2])){
-			System.out.println("Please put a correct number that represent time to refresh the information on miliseconds");
+			System.out.println("Please put a correct number that represent time to refresh the information on seconds");
 			System.exit(1);
 		} else {
 			// Creating the files to write information
@@ -255,17 +257,17 @@ public class WebOMCLauncher{
 			do {
 				try {
 					// Trying to connect to manager on some way
-					publisher = new Publisher(getManagerLoc(0,ip),"ACS Client Status", Files, Long.parseLong(args[2]));
+					publisher = new Publisher(getManagerLoc(0,ip),"ACS Client Status", Files, Long.parseLong(args[2])*1000);
 					resetFile("cacheFile");
-					Files.get("cacheFile").Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Up\"}");
+					Files.get("cacheFile").Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Up\"}",true);
 					connected = true;
 				} catch (Exception e) {
 					resetFile("cacheFile");
 					System.out.println("Path "+Files.get("cacheFile").getPath());
-					Files.get("cacheFile").Escribir("{\"Type\":\"ManagerError\",\"Description\":\"" + e.getMessage() + "\"}");
-					Files.get("cacheFile").Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Down\"}");
-					Files.get("cacheFile").Escribir("{\"Type\":\"AlmaStatus\",\"Status\":\"Down\"}");
-					Files.get("cacheFile").Escribir("{\"Type\":\"OpServer\",\"Status\":\"Down\"}");
+					Files.get("cacheFile").Escribir("{\"Type\":\"ManagerError\",\"Description\":\"" + e.getMessage() + "\"}",true);
+					Files.get("cacheFile").Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Down\"}",false);
+					Files.get("cacheFile").Escribir("{\"Type\":\"AlmaStatus\",\"Status\":\"Down\"}",false);
+					Files.get("cacheFile").Escribir("{\"Type\":\"OpServer\",\"Status\":\"Down\"}",false);
 					connected = false;
 					Thread.sleep(10000);
 				}
