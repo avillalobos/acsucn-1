@@ -23,6 +23,8 @@ import alma.acs.component.client.AdvancedComponentClient;
  */
 public class AntennaStatus extends ACSClient{
 	
+	private HashMap<String, String> AntennaInfo;
+
 	/**
 	 * @param antennasName This array contains the name of the antennas to be displayed on the Antenna status
 	 */
@@ -59,6 +61,7 @@ public class AntennaStatus extends ACSClient{
 		getAntennaReferences();
 		this.isFirstTime = true;
 		this.antennaActiveMQMessageListener = new AntennaActiveMQMessageListener(_brokerURL);
+		this.AntennaInfo = new HashMap<String, String>();
 		
 	}
 
@@ -133,19 +136,24 @@ public class AntennaStatus extends ACSClient{
 				String Status = getStatus(antenna);
 				String Substatus = getSubStatus(antenna);
 				String Online = getOnline(antenna);
+				this.AntennaInfo.put(antennaName, "{\"Type\":\"AntennaStatus\",\"Name\":\""+Name+"\",\"Array\":\""+Array+"\",\"Status\":\""+Status+"\",\"SubStatus\":\""+Substatus+"\",\"Online\":\""+Online+"\"},");
 				report.add("{\"Type\":\"AntennaStatus\",\"Name\":\""+Name+"\",\"Array\":\""+Array+"\",\"Status\":\""+Status+"\",\"SubStatus\":\""+Substatus+"\",\"Online\":\""+Online+"\"},");
 			} catch (INACTErrorEx e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\", \"Description\":\"Unable to get information from " + antennaName + " because this references doesn't have this information\"},");
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\", \"Description\":\"Unable to get information from " + antennaName + " because this references doesn't have this information\"},");
 				writeInfoMessage("INACTErrorEx when try to get information from antenna " + antennaName);
 			} catch (NullPointerException npe) {
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " because there is not reference\"},");
 				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " because there is not reference\"},");
 				writeInfoMessage("Null pointer exception when trying to get information from atenna " + antennaName);
 			} catch (org.omg.CORBA.OBJECT_NOT_EXIST ONE){
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " probably the container is down\"},");
 				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " probably the container is down\"},");
 				writeInfoMessage("Corba Object not exist for atenna " + antennaName + " probably container is down");
 			} catch (org.omg.CORBA.TRANSIENT T){
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " unable to connect to the antenna, probably the container is down\"},");
 				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " unable to connect to the antenna, probably the container is down\"},");
 				writeInfoMessage("Could'n connect to manager for atenna " + antennaName + " probably container is down");
 			}
@@ -256,7 +264,15 @@ public class AntennaStatus extends ACSClient{
 	 * 
 	 * @return A string with the name of all antennas that this client will display, separated by ","
 	 */
-	public String getAllAntennas(){
+	private String getAllAntennas(){
 		return "DV01,DV02,PM03";
+	}
+	
+	public String[] getAntennaNames(){
+		return this.antennasName;
+	}
+	
+	public HashMap<String,String> getAntennaInfo(){
+		return this.AntennaInfo;
 	}
 }

@@ -88,30 +88,35 @@ public class OpServerConnection {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 				this.client.getContainerServices().getLogger().info("########### opserver failed because there is some mysterious problems with opserver, " + e.getCause());
+				this.online = false;
 				return;
 			}
 		}
-		this.online = this.opserver.readyForLogin();
-		/**
 		try {
-			opserver.readyForLogin();
-			opserver.login(this.operator, this.clientName, role, this.clientName);
-			this.client.getContainerServices().getLogger().info("Connection successful to opserver");
-			this.online = true;
-			return;
+			if(opserver.readyForLogin()){
+				opserver.login(this.operator, this.clientName, role, this.clientName);
+				this.client.getContainerServices().getLogger().info("Connection successful to opserver");
+				this.online = true;
+				return;
+			}else{
+				this.online = false;
+				this.serverClient.CleanAllInformation();
+				return;
+			}
 		} catch (OperatorServerProblemEx e) {
 			// TODO Auto-generated catch block
 			this.opserver.logout(operator);
 			//e.printStackTrace();
 			this.client.getContainerServices().getLogger().info("########### opserver failed because there is some mysterious problems with opserver, " + e.getCause());
 			this.online = false;
+			this.serverClient.CleanAllInformation();
 			return;
 		} catch (Exception e){
 			this.online = false;
 			this.client.getContainerServices().getLogger().info("########### opserver conection failed, for some reason =D");
+			this.serverClient.CleanAllInformation();
 			return;
 		}
-		**/
 	}
 
 	/**
@@ -120,9 +125,18 @@ public class OpServerConnection {
 	 * @return <li>true  : If there is connection with opserver </li>
 	 * 		   <li>false : If there is not connection with opserver </li>
 	 */
-	public boolean isOpserverOnline(){
-		Connect();
-		return this.online;
+	public boolean isOpserverOnline() {
+		if (this.opserver == null) {
+			Connect();
+			return this.online;
+		} else {
+			try {
+				return this.online && this.opserver.readyForLogin();
+			} catch (Exception e) {
+				this.serverClient.CleanAllInformation();
+				return false;
+			}
+		}
 	}
 /*
 	private LinkedList<String> getStatus() {

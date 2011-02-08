@@ -208,26 +208,25 @@ public class Publisher implements Runnable{
 		report.add("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+date+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[");
 		report.add("{\"Type:\"OpServerError\",\"Description\":\"Unable to connect to opserver, so we will use offline information\"}");
 		for (ACSClient acs : Status) {
-			report.addAll(acs.getStatus());
+			if(acs instanceof AntennaStatus){
+				AntennaStatus a = (AntennaStatus) acs;
+				Collection<Entry<String, String>> list = a.getAntennaInfo().entrySet();
+				if (list.size() == 0) {
+					String antennas[] = a.getAntennaNames();
+					for (String name : antennas) {
+						WebOMCLauncher.resetFile(name);
+					}
+				} else {
+					for (Entry<String, String> e : list) {
+						WriteFile(e.getKey(), e.getValue(), date);
+					}
+				}
+			}else{
+				report.addAll(acs.getStatus());
+			}
 		}
 		report.add("]}");
-		Executable.WebOMCLauncher.resetFile("cacheFile");
-		try {
-			Thread.sleep(100);
-			this.files.get("cacheFile").Escribir(report);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		WriteFile(report);
 	}
 	
 	/**
@@ -236,20 +235,25 @@ public class Publisher implements Runnable{
 	 * @param date Indicate the date when the report was created
 	 * @param Status Indicate the online clients that will be used to create the status
 	 */
-	private void OnLineStatus(String date, LinkedList<ACSClient> Status){
+	private synchronized void OnLineStatus(String date, LinkedList<ACSClient> Status){
 		LinkedList<String> report = new LinkedList<String>();
 		report.add("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+date+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[");
-		report.add("{\"Type:\"OpServerStatus\",\"Status\":\"Ok\"}");
+		report.add("{\"Type\":\"OpServerStatus\",\"Status\":\"Ok\"}");
 		for (ACSClient acs : Status) {
 			if(acs instanceof Clients.OnLineTool.AntennaStatus){
 				Collection<Entry<String,String>> list = ((Clients.OnLineTool.AntennaStatus) acs).getAntennaInfo().entrySet();
 				for(Entry<String,String> e: list){
-					WriteFile(e.getKey(), e.getValue(), date);
+					if(e.getValue() != null)
+						WriteFile(e.getKey(), e.getValue(), date);
 				}
 			}else{
 				report.addAll(acs.getStatus());
 			}
 		}
+		// Fixing the last comma
+		String last = report.removeLast();
+		report.addLast(last.substring(0, last.length()-1));
+		// Last comma fixed
 		Executable.WebOMCLauncher.resetFile("cacheFile");
 		report.add("]}");
 		WriteFile(report);
@@ -261,7 +265,7 @@ public class Publisher implements Runnable{
 	 * @param report The status to write on the cacheFile 
 	 */
 	private void WriteFile(LinkedList<String> report){
-		Executable.WebOMCLauncher.resetFile("cacheFile");
+		//Executable.WebOMCLauncher.resetFile("cacheFile");
 		try {
 			this.files.get("cacheFile").Escribir(report);
 		} catch (InterruptedException e) {
@@ -287,11 +291,11 @@ public class Publisher implements Runnable{
 	 * @param date Indicate the date when the report was created
 	 */
 	private void WriteFile(String nameFile, String line, String date){
-		Executable.WebOMCLauncher.resetFile(nameFile);
+		//Executable.WebOMCLauncher.resetFile(nameFile);
 		try {
-			this.files.get(nameFile).Escribir("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+date+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[");
-			this.files.get(nameFile).Escribir(line);
-			this.files.get(nameFile).Escribir("}");
+			this.files.get(nameFile).Escribir("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+date+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[",true);
+			this.files.get(nameFile).Escribir(line,false);
+			this.files.get(nameFile).Escribir("]}",false);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

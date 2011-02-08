@@ -87,10 +87,10 @@ public class AlmaStatus extends ACSClient {
 			String status = SubSystemsStatus.get(subsystem);
 			//System.out.println("subsystem " + subsystem + " status " + status);
 			if (status != null) {
-				if (status.equalsIgnoreCase("ERROR")) {
+				if (status.equalsIgnoreCase("UNAVAILABLE")) {
+				return "UNAVAILABLE";
+				}else if (status.equalsIgnoreCase("ERROR")) {
 					return "ERROR";
-				} else if (status.equalsIgnoreCase("UNAVAILABLE")) {
-					return "UNAVAILABLE";
 				} else if (status.equalsIgnoreCase("SHUTDOWN")) {
 					SHUTDOWN++;
 				} else if (status.equalsIgnoreCase("OPERATIONAL")) {
