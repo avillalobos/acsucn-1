@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?><usi:tdm version="1.0" xmlns:usi="http://www.ni.com/Schemas/USI/1_0">
+
+  <usi:documentation>
+    <usi:exporter>National Instruments USI</usi:exporter>
+    <usi:exporterVersion>1.8</usi:exporterVersion>
+  </usi:documentation>
+
+  <usi:model modelName="National Instruments USI generated meta file" modelVersion="1.0">
+    <usi:include nsUri="http://www.ni.com/DataModels/USI/TDM/1_0"/>
+  </usi:model>
+
+  <usi:include/>
+
+  <usi:data>
+    <tdm_root id="usi1">
+      
+      
+      
+      
+      <instance_attributes>
+        <string_attribute name="ABM_SerialNumber">
+          <s>abm345</s>
+        </string_attribute>
+        <string_attribute name="Date">
+          <s>Tue, Feb 08, 2011</s>
+        </string_attribute>
+      </instance_attributes>
+      
+    <name>Van-PC.tfeng.ste</name><description>Save Data From Can SIgnal Monitoring Timming</description><author>Alexis Ibarra</author><datetime>2011-02-08T16:06:04.49319982528686523</datetime><channelgroups>#xpointer(id("usi2") id("usi6") id("usi10") id("usi14") id("usi18"))</channelgroups></tdm_root>
+    <tdm_channelgroup id="usi2">
+      <name>AMB 1 - TEtest</name>
+      <description>Save Data From TEtest</description>
+      <root>#xpointer(id("usi1"))</root>
+      <instance_attributes>
+        <string_attribute name="Error_Range">
+          <s>1.000000 %</s>
+        </string_attribute>
+        <string_attribute name="Periode">
+          <s>0.095999 ms</s>
+        </string_attribute>
+        <string_attribute name="Status">
+          <s>FAIL</s>
+        </string_attribute>
+      </instance_attributes>
+      <channels>#xpointer(id("usi3"))</channels>
+      <submatrices>#xpointer(id("usi4"))</submatrices>
+    </tdm_channelgroup>
+    <tdm_channel id="usi3">
+      <name>Untitled</name>
+      <group>#xpointer(id("usi2"))</group>
+      <datatype>DT_DOUBLE</datatype>
+      <local_columns>#xpointer(id("usi5"))</local_columns>
+    </tdm_channel>
+    <submatrix id="usi4">
+      <name>Untitled</name>
+      <measurement>#xpointer(id("usi2"))</measurement>
+      <local_columns>#xpointer(id("usi5"))</local_columns>
+    </submatrix>
+    <localcolumn id="usi5">
+      <name>Untitled</name>
+      <measurement_quantity>#xpointer(id("usi3"))</measurement_quantity>
+      <submatrix>#xpointer(id("usi4"))</submatrix>
+      <global_flag>15</global_flag>
+      <independent>0</independent>
+      <sequence_representation>explicit</sequence_representation>
+    </localcolumn>
+  <tdm_channelgroup id="usi6"><name>AMB 1 - Can SIgnal Monitoring Timming</name><description>Save Data From Can SIgnal Monitoring Timming</description><root>#xpointer(id("usi1"))</root><instance_attributes><string_attribute name="Error_Range"><s>1.000000 %</s></string_attribute><string_attribute name="Periode"><s>0.036800 ms</s></string_attribute><string_attribute name="Status"><s>FAIL</s></string_attribute></instance_attributes><channels>#xpointer(id("usi7"))</channels><submatrices>#xpointer(id("usi8"))</submatrices></tdm_channelgroup><tdm_channel id="usi7"><name>Untitled</name><group>#xpointer(id("usi6"))</group><datatype>DT_DOUBLE</datatype><local_columns>#xpointer(id("usi9"))</local_columns></tdm_channel><submatrix id="usi8"><name>Untitled</name><measurement>#xpointer(id("usi6"))</measurement><local_columns>#xpointer(id("usi9"))</local_columns></submatrix><localcolumn id="usi9"><name>Untitled</name><measurement_quantity>#xpointer(id("usi7"))</measurement_quantity><submatrix>#xpointer(id("usi8"))</submatrix><global_flag>15</global_flag><independent>0</independent><sequence_representation>explicit</sequence_representation></localcolumn><tdm_channelgroup id="usi10"><name>AMB 1 - Can SIgnal Monitoring Timming</name><description>Save Data From Can SIgnal Monitoring Timming</description><root>#xpointer(id("usi1"))</root><instance_attributes><string_attribute name="Error_Range"><s>1.000000 %</s></string_attribute><string_attribute name="Periode"><s>0.024531 ms</s></string_attribute><string_attribute name="Status"><s>FAIL</s></string_attribute></instance_attributes><channels>#xpointer(id("usi11"))</channels><submatrices>#xpointer(id("usi12"))</submatrices></tdm_channelgroup><tdm_channel id="usi11"><name>Untitled</name><group>#xpointer(id("usi10"))</group><datatype>DT_DOUBLE</datatype><local_columns>#xpointer(id("usi13"))</local_columns></tdm_channel><submatrix id="usi12"><name>Untitled</name><measurement>#xpointer(id("usi10"))</measurement><local_columns>#xpointer(id("usi13"))</local_columns></submatrix><localcolumn id="usi13"><name>Untitled</name><measurement_quantity>#xpointer(id("usi11"))</measurement_quantity><submatrix>#xpointer(id("usi12"))</submatrix><global_flag>15</global_flag><independent>0</independent><sequence_representation>explicit</sequence_representation></localcolumn><tdm_channelgroup id="usi14"><name>AMB 1 - Can SIgnal Monitoring Timming</name><description>Save Data From Can SIgnal Monitoring Timming</description><root>#xpointer(id("usi1"))</root><instance_attributes><string_attribute name="Error_Range"><s>1.000000 %</s></string_attribute><string_attribute name="Periode"><s>0.024529 ms</s></string_attribute><string_attribute name="Status"><s>FAIL</s></string_attribute></instance_attributes><channels>#xpointer(id("usi15"))</channels><submatrices>#xpointer(id("usi16"))</submatrices></tdm_channelgroup><tdm_channel id="usi15"><name>Untitled</name><group>#xpointer(id("usi14"))</group><datatype>DT_DOUBLE</datatype><local_columns>#xpointer(id("usi17"))</local_columns></tdm_channel><submatrix id="usi16"><name>Untitled</name><measurement>#xpointer(id("usi14"))</measurement><local_columns>#xpointer(id("usi17"))</local_columns></submatrix><localcolumn id="usi17"><name>Untitled</name><measurement_quantity>#xpointer(id("usi15"))</measurement_quantity><submatrix>#xpointer(id("usi16"))</submatrix><global_flag>15</global_flag><independent>0</independent><sequence_representation>explicit</sequence_representation></localcolumn><tdm_channelgroup id="usi18"><name>AMB 1 - Can SIgnal Monitoring Timming</name><description>Save Data From Can SIgnal Monitoring Timming</description><root>#xpointer(id("usi1"))</root><instance_attributes><string_attribute name="Error_Range"><s>1.000000 %</s></string_attribute><string_attribute name="Periode"><s>0.024530 ms</s></string_attribute><string_attribute name="Status"><s>FAIL</s></string_attribute></instance_attributes><channels>#xpointer(id("usi19"))</channels><submatrices>#xpointer(id("usi20"))</submatrices></tdm_channelgroup><tdm_channel id="usi19"><name>Untitled</name><group>#xpointer(id("usi18"))</group><datatype>DT_DOUBLE</datatype><local_columns>#xpointer(id("usi21"))</local_columns></tdm_channel><submatrix id="usi20"><name>Untitled</name><measurement>#xpointer(id("usi18"))</measurement><local_columns>#xpointer(id("usi21"))</local_columns></submatrix><localcolumn id="usi21"><name>Untitled</name><measurement_quantity>#xpointer(id("usi19"))</measurement_quantity><submatrix>#xpointer(id("usi20"))</submatrix><global_flag>15</global_flag><independent>0</independent><sequence_representation>explicit</sequence_representation></localcolumn></usi:data>
+
+</usi:tdm>
