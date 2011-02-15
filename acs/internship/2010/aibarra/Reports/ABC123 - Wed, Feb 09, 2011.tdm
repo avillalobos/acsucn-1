@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<usi:tdm xmlns:usi="http://www.ni.com/Schemas/USI/1_0" version="1.0">
+
+  <usi:documentation>
+    <usi:exporter>National Instruments USI</usi:exporter>
+    <usi:exporterVersion>1.8</usi:exporterVersion>
+  </usi:documentation>
+
+  <usi:model modelName="National Instruments USI generated meta file" modelVersion="1.0">
+    <usi:include nsUri="http://www.ni.com/DataModels/USI/TDM/1_0"/>
+  </usi:model>
+
+  <usi:include/>
+
+  <usi:data>
+    <tdm_root id="usi1">
+      <name>Van-PC.aoc.ste</name>
+      <description>Save Data From Can SIgnal Monitoring Timming</description>
+      <author>Alexis Ibarra</author>
+      <datetime>2011-02-09T12:34:44.9215998649597168</datetime>
+      <instance_attributes>
+        <string_attribute name="ABM_SerialNumber">
+          <s>ABC123</s>
+        </string_attribute>
+        <string_attribute name="Date">
+          <s>Wed, Feb 09, 2011</s>
+        </string_attribute>
+      </instance_attributes>
+      <channelgroups>#xpointer(id("usi2"))</channelgroups>
+    </tdm_root>
+    <tdm_channelgroup id="usi2">
+      <name>AMB 1 - Can SIgnal Monitoring Timming</name>
+      <description>Save Data From Can SIgnal Monitoring Timming</description>
+      <root>#xpointer(id("usi1"))</root>
+      <instance_attributes>
+        <string_attribute name="Error_Range">
+          <s>0.000000 %</s>
+        </string_attribute>
+        <string_attribute name="Periode">
+          <s>0.000000 ms</s>
+        </string_attribute>
+        <string_attribute name="Status">
+          <s>FAIL</s>
+        </string_attribute>
+      </instance_attributes>
+      <channels>#xpointer(id("usi3"))</channels>
+      <submatrices>#xpointer(id("usi4"))</submatrices>
+    </tdm_channelgroup>
+    <tdm_channel id="usi3">
+      <name>Untitled</name>
+      <group>#xpointer(id("usi2"))</group>
+      <datatype>DT_DOUBLE</datatype>
+      <local_columns>#xpointer(id("usi5"))</local_columns>
+    </tdm_channel>
+    <submatrix id="usi4">
+      <name>Untitled</name>
+      <measurement>#xpointer(id("usi2"))</measurement>
+      <local_columns>#xpointer(id("usi5"))</local_columns>
+    </submatrix>
+    <localcolumn id="usi5">
+      <name>Untitled</name>
+      <measurement_quantity>#xpointer(id("usi3"))</measurement_quantity>
+      <submatrix>#xpointer(id("usi4"))</submatrix>
+      <global_flag>15</global_flag>
+      <independent>0</independent>
+      <sequence_representation>explicit</sequence_representation>
+    </localcolumn>
+  </usi:data>
+
+</usi:tdm>
