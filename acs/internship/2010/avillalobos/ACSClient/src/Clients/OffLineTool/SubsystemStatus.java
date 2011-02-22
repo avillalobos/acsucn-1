@@ -20,11 +20,12 @@ import alma.acs.component.client.AdvancedComponentClient;
  * This class show the subsystem status, to do that, using the container services from the AdvancedComponentClient on
  * ACSClient, this class get the reference to each subsystem and obtain the needed information, then create a report with
  * all subsystems on JSON format to be returned throw getStatus method.
- * 
+ *
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
- * 		Contact to a.e.v.r.007@gmail.com
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class SubsystemStatus extends ACSClient{
 	
@@ -95,6 +96,12 @@ public class SubsystemStatus extends ACSClient{
 	 */
 	@Override
 	public LinkedList<String> getStatus() {
+		/*
+		if(!isAcsOnline()){
+			this.SubSystemsProperties.clear();
+			getSubsystemsReferences();
+		}
+		*/
 		if(this.SubSystemsProperties.size() < this.subsystemsList.length && !this.firstTime){
 			getReferenceOfRemainsSubsystems();
 		}
@@ -131,21 +138,21 @@ public class SubsystemStatus extends ACSClient{
 				}
 				this.SubSystemsStatus.put(subsystem, status);
 				//report.add("{\"Type\":\"SubsystemStatus\",\"Name\":\""+masterComp.name()+"\",\"CompStat\":\""+masterComp.componentState().toString()+"\",\"SubSysStat\":\""+status+"\"},");
-				report.add("{\"Type\":\"SubsystemStatus\",\"Name\":\""+masterComp.name()+"\",\"SubSysStat\":\""+status+"\"},");
+				report.add("{\"Type\":\"SubsystemStatus\",\"Name\":\""+masterComp.name()+"\",\"Status\":\""+status+"\"},");
 				
 				//report.add("Estado actual del subsistema  " + this.Subsystems[i] + " = " + masterComp.componentState().toString());
 			} catch (BAD_OPERATION e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
-				report.add("{\"Type\":\"SubsystemError\",\"Name\":\""+subsystem+"\",\"Description\":\"Bad Operation\"},");
+				report.add("{\"Type\":\"SubsystemStatus\",\"Name\":\""+subsystem+"\",\"Status\":\"Bad Operation\"},");
 				writeInfoMessage("could't retrieve information from subsystem " + subsystem +" when getting status because of Bad operation exception");
 				this.SubSystemsStatus.put(subsystem, "UNAVAILABLE");
 			} catch (NullPointerException npe){
-				report.add("{\"Type\":\"SubsystemError\",\"Name:\""+subsystem+"\",\"Description\":\"Unable to connect with the subsystem " + subsystem + "\"},");
+				report.add("{\"Type\":\"SubsystemStatus\",\"Name:\""+subsystem+"\",\"Status\":\"Unable to connect with the subsystem " + subsystem + "\"},");
 				writeInfoMessage("Unable to get information from subsystem " + subsystem + " because there is not reference to this subsystem");
 				this.SubSystemsStatus.put(subsystem, "UNAVAILABLE");
 			} catch (Exception e){
-				report.add("{\"Type\":\"SubsystemError\",\"Name:\""+subsystem+"\",\"Description\":\"Unable to reconnect with manager \"},");
+				report.add("{\"Type\":\"SubsystemStatus\",\"Name:\""+subsystem+"\",\"Status\":\"Unable to reconnect with manager \"},");
 				writeInfoMessage("Unable to get information from subsystem " + subsystem);
 				this.SubSystemsStatus.put(subsystem, "UNAVAILABLE");
 			}

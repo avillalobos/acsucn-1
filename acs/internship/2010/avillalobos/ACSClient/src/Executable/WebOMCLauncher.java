@@ -1,18 +1,23 @@
 package Executable;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * Main class responsible to try to connect with something on ACS (client or opserver) and put this
  * information on a cache file to leate be displayed by a webservice.
- * 
+ *
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
- * 		Contact to a.e.v.r.007@gmail.com
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class WebOMCLauncher{
 
@@ -124,7 +129,8 @@ public class WebOMCLauncher{
 				           "to exist, on the Axis2 home must to be a folder named WebOMCFiles and on this place all files will be saved");
 		System.out.println("\t 1) AcsInstance");
 		System.out.println("\t 2) IP to Manager");
-		System.out.println("\t 3) Time to refresh");
+		System.out.println("\t 3) Time to refresh on seconds");
+		System.out.println("\t 4) Broker URI");
 		System.out.println("\t x) -h to show this help");
 	}
 	
@@ -161,16 +167,20 @@ public class WebOMCLauncher{
 	 * 		   <li>false : Is is not a valid IP </li>
 	 */
 	private static boolean isIp(String arg2){
-		String[] ip = arg2.split("\\.");
-		if(ip.length != 4){
-			return false;
-		}else{
-			for(int i = 0; i < 4; i++){
-				if(!isNumber(ip[i])){
-					return false;
-				}
-			}
+		if(arg2.equalsIgnoreCase("localhost")){
 			return true;
+		}else{
+			String[] ip = arg2.split("\\.");
+			if (ip.length != 4) {
+				return false;
+			} else {
+				for (int i = 0; i < 4; i++) {
+					if (!isNumber(ip[i])) {
+						return false;
+					}
+				}
+				return true;
+			}
 		}
 	}
 	
@@ -178,19 +188,25 @@ public class WebOMCLauncher{
 	 * This method check the files, if file exist, will return the complete file path, else will create it
 	 * 
 	 * @param fileName The name of the file to check
+	 * @param write Indicate if the file will be to write or read, if write is false, then assume that the file will 
+	 * be used to read
 	 * @return An Archivo file to write on it. 
 	 */
-	private static Archivo checkFile(String fileName){
+	private static Archivo checkFile(String fileName, boolean write){
 		String filePath = recoverPathFile(fileName);
 		if (filePath.equalsIgnoreCase("Path not found")	|| filePath.equalsIgnoreCase("Unable to recover path")) {
 			createFile(fileName);
 			filePath = recoverPathFile(fileName);
 		}else{
-			resetFile(fileName);
+			if(write)
+				resetFile(fileName);
 		}
 		Archivo archivo = new Archivo(filePath);
 		try {
-			archivo.Escritura();
+			if(write)
+				archivo.Escritura();
+			else
+				archivo.Lectura();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.out.println(e.getMessage());
@@ -206,23 +222,119 @@ public class WebOMCLauncher{
 	 * @return A HashMap that contain an Archivo to write and read files. The key of the hashmap is the name of
 	 * the file.
 	 */
-	private static HashMap<String,Archivo> InitializeAllFiles(){
+	private static HashMap<String,Archivo> InitializeAllFiles(String antennas[], String devices[]){
 		HashMap<String,Archivo> Files = new HashMap<String,Archivo>();
 		// Creating cacheFile, where all logs except Antenna will be writed
-		Files.put("cacheFile", checkFile("cacheFile"));
+		Files.put("cacheFile", checkFile("cacheFile",true));
 		System.out.println("Cache file is ready");
 		
 		// Creating AntennaFiles
-		String antennas[] = getAntennaNames();
 		for(String antennaName : antennas){
-			Files.put(antennaName, checkFile(antennaName));
+			Files.put(antennaName, checkFile(antennaName,true));
 			System.out.println("File to antenna " + antennaName + " already");
+		}
+		
+		// Creating Devices files
+		for(String dev : devices){
+			Files.put(dev, checkFile(dev,true));
+			System.out.println("File to device " + dev + " already");
 		}
 		return Files;
 	}
 	
+	/**
+	 * This method return the name of the available antennas
+	 * 
+	 * @return An array with the name of each antenna
+	 */
 	private static String[] getAntennaNames(){
-		return "DV01,DV02,PM03".split(",");
+		Archivo a = checkFile("Antennas",false);
+		try {
+			LinkedList<String> antennas = a.LeerCompleto();
+			String[] returned = new String[antennas.size()];
+			int i = 0;
+			System.out.println("Antennas to load =>");
+			for(String name : antennas){
+				System.out.println("\t '- Antenna "+name);
+				returned[i] = name;
+				i++;
+			}
+			System.out.println();
+			return returned;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error, unable to get antenna name on file");
+			e.printStackTrace();
+			System.exit(0);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error, unable to get antenna name on file");
+			e.printStackTrace();
+			System.exit(0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println("Error, unable to get antenna name on file");
+			e.printStackTrace();
+			System.exit(0);
+		}
+		return null;
+	}
+	
+	/**
+	 * This method return the name of the available devices
+	 * 
+	 * @return An array with the name of each device
+	 */
+	private static String[] getDevices(){
+		Archivo a = checkFile("Devices",false);
+		try {
+			LinkedList<String> devices = a.LeerCompleto();
+			String[] returned = new String[devices.size()];
+			int i = 0;
+			System.out.println("Devices to load =>");
+			for(String name : devices){
+				System.out.println("\t '- Device "+name);
+				returned[i] = name;
+				i++;
+			}
+			System.out.println();
+			return returned;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Error, unable to get devices name on file");
+			System.exit(0);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Error, unable to get devices name on file");
+			System.exit(0);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("Error, unable to get devices name on file");
+			System.exit(0);
+		}
+		return null;
+	}
+	
+	/**
+	 * This Method validate the broker URI, at this moment, just validate that
+	 * exist a type of connection, by example "TCP", then an valid ip and then
+	 * a port, so, if you want to make sure that my client will accept your
+	 * broker URI, the you must to pass somethink like this : tcp://10.195.17.114:61616 or tcp://localhost:61616
+	 * 
+	 * @param uri The address to connect with ActiveMQ server
+	 * @return <li> true :  </li>
+	 */
+	private static boolean isAValidBrokerUri(String uri){
+		String[] x = uri.split(":");
+		if(x.length < 3){
+			return false;
+		}else{
+			String ip = x[1];
+			return isIp(ip.substring(2));
+		}
 	}
 	
 	/**
@@ -248,33 +360,52 @@ public class WebOMCLauncher{
 		} else if (!isNumber(args[2])){
 			System.out.println("Please put a correct number that represent time to refresh the information on seconds");
 			System.exit(1);
+		} else if(!isAValidBrokerUri(args[3])){
+			System.out.println("Please put a correct broker uri");
+			System.exit(1);
 		} else {
+			// getting Antenna and device names
+			String[] antennas = getAntennaNames();
+			String[] devices = getDevices();
 			// Creating the files to write information
-			HashMap<String,Archivo> Files = InitializeAllFiles();
+			HashMap<String,Archivo> Files = InitializeAllFiles(antennas, devices);
 			String ip = args[1];
-			boolean connected = false;
 			Publisher publisher = null;
 			do {
 				try {
+					String brokerURI = args[3];
 					// Trying to connect to manager on some way
-					publisher = new Publisher(getManagerLoc(0,ip),"ACS Client Status", Files, Long.parseLong(args[2])*1000);
+					publisher = new Publisher(getManagerLoc(0,ip),"ACS Client Status", Files, Long.parseLong(args[2])*1000,antennas,devices,brokerURI);
 					resetFile("cacheFile");
 					Files.get("cacheFile").Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Up\"}",true);
-					connected = true;
 				} catch (Exception e) {
 					resetFile("cacheFile");
 					System.out.println("Path "+Files.get("cacheFile").getPath());
-					Files.get("cacheFile").Escribir("{\"Type\":\"ManagerError\",\"Description\":\"" + e.getMessage() + "\"}",true);
-					Files.get("cacheFile").Escribir("{\"Type\":\"ACSStatus\",\"Status\":\"Down\"}",false);
-					Files.get("cacheFile").Escribir("{\"Type\":\"AlmaStatus\",\"Status\":\"Down\"}",false);
-					Files.get("cacheFile").Escribir("{\"Type\":\"OpServer\",\"Status\":\"Down\"}",false);
-					connected = false;
+					Files.get("cacheFile").Escribir("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+false+",\"Date\":\""+getDate()+"\",\"Iteration\":\""+ 0 + "\",\"Status\":[",true);
+					Files.get("cacheFile").Escribir("{\"Type\":\"ManagerError\",\"Name\":\"Manager\",\"Status\":\"" + e.getMessage() + "\"},",false);
+					Files.get("cacheFile").Escribir("{\"Type\":\"ACSStatus\",\"Name\":\"ACS Status\",\"Status\":\"Down\"},",false);
+					Files.get("cacheFile").Escribir("{\"Type\":\"AlmaStatus\",\"Name\":\"Alma Status\",\"Status\":\"Down\"},",false);
+					Files.get("cacheFile").Escribir("{\"Type\":\"OpServerStatus\",\"Name\":\"OpServer Status\",\"Status\":\"Down\"}",false);
+					Files.get("cacheFile").Escribir("]}",false);
 					Thread.sleep(10000);
 				}
-			} while (!connected);
-			Thread publisherThread = new Thread(publisher);
-			publisherThread.run();
+				Thread publisherThread = new Thread(publisher);
+				publisherThread.run();
+				publisher = null;
+				System.out.println("\n\t #### Start again ####");
+			} while (true);
 		}
+	}
+	
+	/**
+	 * This method create the date to add to the report
+	 * 
+	 * @return A string with the actual date on the following format "yyyy'/'MM'/'dd 'at' hh:mm:ss z", example = 2011/02/04 at 09:35:39 UTC
+	 */
+	private static String getDate() {
+	    Calendar cal = Calendar.getInstance();
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy'/'MM'/'dd 'at' hh:mm:ss z");
+	    return sdf.format(cal.getTime());
 	}
 
 }

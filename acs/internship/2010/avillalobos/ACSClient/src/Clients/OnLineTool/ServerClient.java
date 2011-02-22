@@ -20,6 +20,11 @@ import alma.exec.operatorbase.client.teamwork.auxiliary.OperatorClientImpl;
  * is the same of the last iteration
  * 
  * @author mschilling
+ * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class ServerClient extends OperatorClientImpl {
 	
@@ -119,23 +124,37 @@ public class ServerClient extends OperatorClientImpl {
 	}
 
 	/**
-	 * This method is override from OperatorClientImpl and receive all the new information from opserver
+	 * This method is override from OperatorClientImpl and receive all the new information from opserver related to Alma status
+	 * 
+	 * @param structs Contains the alma status sent from opserver
+	 * @param type The type of message received
 	 */
 	public synchronized void receiveAlma (AlmastatusStruct[] structs, ReceiveType type) {
 		System.out.println("\n\t ## Incomming message from opserver to Alma status ## \n");
 		// Anything that come here, must to be updated
 		this.AlmaStatus.clear();
-		this.AlmaStatus.put("Status", "{\"Type\":\"AlmaStatus\",\"Status\":\""+structs[0].status.toString()+"\"},");
+		this.AlmaStatus.put("Status", "{\"Type\":\"AlmaStatus\",\"Name\":\"Alma Status\",\"Status\":\""+structs[0].status.toString()+"\"},");
 	}
 
-	// The manager status represent the ACS status, so, if i can't connect with manager, represent that ACS is down
+	/**
+	 * The manager status represent the ACS status, so, if i can't connect with manager, represent that ACS is down
+	 * 
+	 * @param structs Contains the manager status sent from opserver
+	 * @param type The type of message received 
+	 */
 	@Override
 	public synchronized void receiveManager (ServantstatusStruct[] structs, ReceiveType type) {
 		System.out.println("\n\t ## Incomming message from opserver to Manager status ## \n");
 		this.ManagerStatus.clear();
-		this.ManagerStatus.put("Status", "{\"Type\":\"ACSStatus\",\"Status\":\""+structs[0].status.toString()+"\"},");
+		this.ManagerStatus.put("Status", "{\"Type\":\"ACSStatus\",\"Name\":\"ACS Status\",\"Status\":\""+structs[0].status.toString()+"\"},");
 	}
 
+	/**
+	 * This method receive the new information from opserver related to the component status
+	 * 
+	 * @param structs Contains the component status sent from opserver
+	 * @param type The type of message received
+	 */
 	@Override
 	public synchronized void receiveComponents (ComponentStruct[] structs, ReceiveType type) {
 		try {
@@ -161,6 +180,12 @@ public class ServerClient extends OperatorClientImpl {
 		notify();
 	}
 
+	/**
+	 * This method receive the information from opserver about subsystems status
+	 * 
+	 * @param structs Contains the subsystems status sent from opserver
+	 * @param type The type of message received
+	 */
 	@Override
 	public synchronized void receiveSubsystems (SubsystemStruct[] structs, ReceiveType type) {
 		System.out.println("\n\t ## Incomming message from opserver to subsystems status ## \n");
@@ -173,7 +198,7 @@ public class ServerClient extends OperatorClientImpl {
 				}else{
 					status = s.status[1];
 				}
-				this.SubSystemStatus.put(s.name,"{\"Type\":\"SubsystemStatus\",\"Name\":\""+s.name+"\",\"SubSysStat\":\""+status+"\"},");
+				this.SubSystemStatus.put(s.name,"{\"Type\":\"SubsystemStatus\",\"Name\":\""+s.name+"\",\"Status\":\""+status+"\"},");
 			}
 		}else if(type == ReceiveType.DIFF){
 			String status = null;
@@ -183,7 +208,7 @@ public class ServerClient extends OperatorClientImpl {
 					} else {
 						status = s.status[1];
 					}
-					this.SubSystemStatus.put(s.name, "{\"Type\":\"SubsystemStatus\",\"Name\":\""+s.name+"\",\"SubSysStat\":\""+status+"\"},");				
+					this.SubSystemStatus.put(s.name, "{\"Type\":\"SubsystemStatus\",\"Name\":\""+s.name+"\",\"Status\":\""+status+"\"},");				
 			}
 		}else{
 			System.out.println("What the hell!!!!");
@@ -191,7 +216,15 @@ public class ServerClient extends OperatorClientImpl {
 		}
 	}
 
-	
+	/**
+	 * This method receive the infomation from opserver related to containers status. The opserver send information about active containers
+	 * so when a container down, then doesnt receive information about this container, so to can show when a container is down, you must 
+	 * to store the pass status of all containers and if the new information contains less information, then the containers that on the
+	 * past interations exist and now no is a fall container. 
+	 * 
+	 * @param structs Contains the containers status sent from opserver
+	 * 
+	 */
 	@Override
 	public synchronized void receiveActiveContainers (NameStruct[] structs, ReceiveType type) {
 		System.out.println("\n\t ## Incomming message from opserver to Active Containers ## \n");
@@ -220,18 +253,23 @@ public class ServerClient extends OperatorClientImpl {
 		this.oldContainerStatus.clear();
 		this.oldContainerStatus.putAll(this.ContainerStatus);
 	}
-	//protected HashSet<String> containers = new HashSet<String>();
 	
+	/**
+	 * This method receive information from opserver related to antenna status
+	 * 
+	 * @param structs Contains the antenna status sent from opserver
+	 * @param type
+	 */
 	public synchronized void receiveAntennas (AntennaStruct[] structs, ReceiveType type) {
 		System.out.println("\n\t ## Incomming message from opserver to Antenna Status ## \n");
 		if (type == ReceiveType.TOTAL) {
 			this.AntennaStatus.clear();
 			for (AntennaStruct s : structs) {
-				this.AntennaStatus.put(s.antennaName,"{\"Type\":\"AntennaStatus\",\"Name\":\"" + s.antennaName + "\",\"Array\":\"" + s.arrayName + "\",\"Status\":\"" + s.antennasState.toString() + "\",\"SubStatus\":\"" + s.antennaSubstate.toString() + "\",\"Online\":\"" + s.antennaMode + "\"},");
+				this.AntennaStatus.put(s.antennaName,"{\"Type\":\"AntennaStatus\",\"Name\":\"" + s.antennaName + "\",\"Array\":\"" + s.arrayName + "\",\"Status\":\"" + s.antennasState.toString() + "\",\"SubStatus\":\"" + s.antennaSubstate.toString() + "\",\"Online\":\"" + s.antennaMode + "\"}");
 			}
 		} else if (type == ReceiveType.DIFF) {
 			for (AntennaStruct s : structs) {
-				this.AntennaStatus.put(s.antennaName,"{\"Type\":\"AntennaStatus\",\"Name\":\"" + s.antennaName + "\",\"Array\":\"" + s.arrayName + "\",\"Status\":\"" + s.antennasState.toString() + "\",\"SubStatus\":\"" + s.antennaSubstate.toString() + "\",\"Online\":\"" + s.antennaMode + "\"},");
+				this.AntennaStatus.put(s.antennaName,"{\"Type\":\"AntennaStatus\",\"Name\":\"" + s.antennaName + "\",\"Array\":\"" + s.arrayName + "\",\"Status\":\"" + s.antennasState.toString() + "\",\"SubStatus\":\"" + s.antennaSubstate.toString() + "\",\"Online\":\"" + s.antennaMode + "\"}");
 			}
 		} else {
 			System.out.println("What the hell!!!!");
@@ -258,6 +296,13 @@ public class ServerClient extends OperatorClientImpl {
 	 * ####################################################################################################
 	 */
 	
+	/**
+	 * This method generate a report from a specific HashMap, so each of the HashMaps representing ACSStatus, AlmaStatus, AntennaStatus, ContainerStatus and SubsystemStatus 
+	 * can be passed as a parameter and will return a linkedlist of Status on json format.
+	 * 
+	 * @param status A hashmap wich status information
+	 * @return A linked list with strings representing information on json format
+	 */
 	private LinkedList<String> generateReport(HashMap<String,String> status){
 		// Container Status on 
 		Collection<Entry<String,String>> set = status.entrySet();
@@ -268,6 +313,13 @@ public class ServerClient extends OperatorClientImpl {
 		return report;
 	}
 	
+	/**
+	 * This method recieve as parameter the name of the system to monitor and return a linked list 
+	 * with this information 
+	 * 
+	 * @param NameOfStatus Ths kind of status that you need
+	 * @return A linked list with the needed information
+	 */
 	public LinkedList<String> getStatusList(String NameOfStatus){
 		if(NameOfStatus.equalsIgnoreCase("ACSStatus")){
 			return generateReport(this.ManagerStatus);
@@ -290,10 +342,18 @@ public class ServerClient extends OperatorClientImpl {
 		}
 	}
 
+	/**
+	 * This method return the entire information of antenna received by this listener
+	 * @return A hashmap with the antenna information, the key of this hashmap is equal to the name o the
+	 * antenna and the value have the status on json format
+	 */
 	public HashMap<String, String> getAntennaStatus() {
 		return this.AntennaStatus;
 	}
 	
+	/**
+	 * This method clear all the hashmaps
+	 */
 	public void CleanAllInformation(){
 		this.AlmaStatus.clear();
 		this.AntennaStatus.clear();

@@ -32,9 +32,10 @@ import java.text.SimpleDateFormat;
  * wait some time specified on the constructor, with a refresh parameter.
  * 
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
- * 		Contact to a.e.v.r.007@gmail.com
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class Publisher implements Runnable{
 	
@@ -97,6 +98,11 @@ public class Publisher implements Runnable{
 	 */
 	private boolean OpServerOnline;
 	
+	private String[] AntennasName;
+	private String[] Devices;
+	private String brokerURI;
+	private String clientName;
+	
 	/**
 	 * This is the constructor of Publisher class, here will try to connect with manager, because we try to create an
 	 * Acs Client, if the connection was not possible, then will throw and exception saying that its impossible to 
@@ -109,18 +115,24 @@ public class Publisher implements Runnable{
 	 * @throws Exception Indicate that was unnable to create a client, contain the message to be written on the
 	 * corresponding file.
 	 */
-	public Publisher(String _managerLoc, String _clientName,HashMap<String,Archivo> _files, Long _refresh) throws Exception{
+	public Publisher(String _managerLoc, String _clientName,HashMap<String,Archivo> _files, Long _refresh,String[] antennas, String[] devices,String _brokerURI) throws Exception{
+		
+		this.clientName = _clientName;
+		this.AntennasName = antennas;
+		this.Devices = devices;
+		this.brokerURI = _brokerURI;
+		
 		this.files = _files;
 		this.timeToRefresh = _refresh;
 		this.ExecutedRefresh = 0;
 		this.Mutliplier = 1;
 		try {
-			this.client = new AdvancedComponentClient(ClientLogManager.getAcsLogManager().getLoggerForApplication(_clientName, false), _managerLoc, _clientName);
-			this.opserver = new OpServerConnection(this.client,_clientName,"IDL:alma/exec/Executive:1.0");
+			this.client = new AdvancedComponentClient(ClientLogManager.getAcsLogManager().getLoggerForApplication(this.clientName, false), _managerLoc, _clientName);
+			this.opserver = new OpServerConnection(this.client,this.clientName,"IDL:alma/exec/Executive:1.0");
 			// its necessary to have both kind of clients, because if one falls, the other can replace
 			createOffLineClients();
 			createOnLineClients();
-			this.OpServerOnline = true;
+			this.OpServerOnline = this.opserver.isOpserverOnline();
 		} catch (Exception e) {
 			this.OpServerOnline = false;
 			throw new Exception("Failed connection with manager, we must to try again");
@@ -142,7 +154,7 @@ public class Publisher implements Runnable{
 		this.onLineClients = new LinkedList<ACSClient>();
 		this.onLineClients.add(new ACSStatus(this.client, this.opserver));
 		this.onLineClients.add(new Clients.OnLineTool.AlmaStatus(this.client, this.opserver));
-		this.onLineClients.add(new Clients.OnLineTool.AntennaStatus(this.client, this.opserver));
+		this.onLineClients.add(new Clients.OnLineTool.AntennaStatus(this.client, this.opserver,this.brokerURI,getDevices()));
 		this.onLineClients.add(new ContainerStatus(this.client, this.opserver));
 		this.onLineClients.add(new SubsystemsStatus(this.client, this.opserver));
 		
@@ -167,8 +179,16 @@ public class Publisher implements Runnable{
 		offLineClients.add(new CorbaStatus(this.client));
 		SubsystemStatus sss = new SubsystemStatus(this.client);
 		offLineClients.add(sss);
-		offLineClients.add(new AntennaStatus(this.client,"tcp://tmc-services.aiv.alma.cl:61616"));
+		offLineClients.add(new AntennaStatus(this.client,this.brokerURI,getAntennas(),getDevices()));
 		offLineClients.addLast(new AlmaStatus(this.client, sss));
+	}
+	
+	private String[] getDevices(){
+		return this.Devices;
+	}
+	
+	private String[] getAntennas(){
+		return this.AntennasName;
 	}
 	
 	/*
@@ -206,7 +226,7 @@ public class Publisher implements Runnable{
 	private void OffLineStatus(String date, LinkedList<ACSClient> Status){
 		LinkedList<String> report = new LinkedList<String>();
 		report.add("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+date+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[");
-		report.add("{\"Type:\"OpServerError\",\"Description\":\"Unable to connect to opserver, so we will use offline information\"}");
+		report.add("{\"Type:\"OpServerStatus\",\"Name\":\"OpServerError\",\"Status\":\"Unable to connect to opserver, so we will use offline information\"},");
 		for (ACSClient acs : Status) {
 			if(acs instanceof AntennaStatus){
 				AntennaStatus a = (AntennaStatus) acs;
@@ -238,11 +258,18 @@ public class Publisher implements Runnable{
 	private synchronized void OnLineStatus(String date, LinkedList<ACSClient> Status){
 		LinkedList<String> report = new LinkedList<String>();
 		report.add("{\"Type\":\"ReportInfo\",\"OnlineInfo\":"+this.OnLineActivated+",\"Date\":\""+date+"\",\"Iteration\":\""+ this.Mutliplier + " * " + this.ExecutedRefresh + "\",\"Status\":[");
-		report.add("{\"Type\":\"OpServerStatus\",\"Status\":\"Ok\"}");
+		report.add("{\"Type\":\"OpServerStatus\",\"Name\":\"OpServerStatus\",\"Status\":\"Ok\"},");
 		for (ACSClient acs : Status) {
 			if(acs instanceof Clients.OnLineTool.AntennaStatus){
 				Collection<Entry<String,String>> list = ((Clients.OnLineTool.AntennaStatus) acs).getAntennaInfo().entrySet();
 				for(Entry<String,String> e: list){
+					if(e.getValue() != null)
+						WriteFile(e.getKey(), e.getValue(), date);
+				}
+				
+				Collection<Entry<String,String>> hashreport = ((Clients.OnLineTool.AntennaStatus) acs).getActiveMQInfo().entrySet();
+				for(Entry<String,String> e: hashreport){
+					System.out.println("Iterando sobre el hash report de antenna para activemq");
 					if(e.getValue() != null)
 						WriteFile(e.getKey(), e.getValue(), date);
 				}
@@ -265,7 +292,7 @@ public class Publisher implements Runnable{
 	 * @param report The status to write on the cacheFile 
 	 */
 	private void WriteFile(LinkedList<String> report){
-		//Executable.WebOMCLauncher.resetFile("cacheFile");
+		Executable.WebOMCLauncher.resetFile("cacheFile");
 		try {
 			this.files.get("cacheFile").Escribir(report);
 		} catch (InterruptedException e) {
@@ -333,6 +360,7 @@ public class Publisher implements Runnable{
 		
 		LinkedList<ACSClient> Status = new LinkedList<ACSClient>();
 		if(this.opserver == null){
+			this.opserver = new OpServerConnection(this.client,this.clientName,"IDL:alma/exec/Executive:1.0");
 			this.OnLineActivated = false;
 			Status.addAll(this.offLineClients);
 		}else if(isOpServerOnline()){
@@ -385,6 +413,9 @@ public class Publisher implements Runnable{
 				this.ExecutedRefresh = 0;
 			}
 			this.ExecutedRefresh++;
+			if(isAcsFalling()){
+				break;
+			}
 			PrintStatus();
 			writeInfoMessage("Status was written on file " + this.files.get("cacheFile").getPath() + " " + this.Mutliplier + " * " + this.ExecutedRefresh + " times");
 			try {
@@ -416,6 +447,29 @@ public class Publisher implements Runnable{
 	private boolean isOpServerOnline(){
 		this.OpServerOnline = this.opserver.isOpserverOnline();
 		return this.OpServerOnline;
+	}
+	
+	/**
+	 * @param before This parameter indicate the past state of OpServerOnline to can decide when ACS is falling down
+	 */
+	private boolean before = false;
+	
+	/**
+	 * This method indicate when acs is falling
+	 * @return	<li>true  : if acs is falling, this is determinated when the past state of ACS was true and the actual state is false </li>
+	 * 			<li>false : any another combination of variables.
+	 */
+	private boolean isAcsFalling(){
+		System.out.println("\n\t ####  before " + this.before + " now " + this.OpServerOnline);
+		boolean acs = this.client.getAcsManagerProxy().pingManager(100);
+		if(before && !acs){
+			System.out.println("\n\t #####  ACS is falling!  #####");
+			this.before = acs;
+			return true;
+		}else{
+			this.before = acs;
+			return false;
+		}
 	}
 	
 }
