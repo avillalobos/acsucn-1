@@ -15,6 +15,12 @@ import alma.exec.operatorbase.portable.ExecRole;
  * his information or there is not connection with the opserver, then the application must to use the offline information.
  * There is a class named ServerClient made by Marcus Shilling that allow me to get the information from opserver
  * through a listener, this listener is ServerClient and this class initialize the ServerClient and the connection to opserver
+ *
+ * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class OpServerConnection {
 

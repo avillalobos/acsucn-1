@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import Clients.ACSClient;
+import Clients.AntennaActiveMQMessageListener;
 import alma.Control.Antenna;
 import alma.Control.AntennaHelper;
 import alma.ControlExceptions.INACTErrorEx;
@@ -15,11 +16,12 @@ import alma.acs.component.client.AdvancedComponentClient;
  * obtain the antenna component reference, using the client from ACSClient, get the containerservices
  * and obtain a reference to antenna, this references is stored to reuse during the execution of the
  * program.
- * 
+ *
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
- * 		Contact to a.e.v.r.007@gmail.com
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class AntennaStatus extends ACSClient{
 	
@@ -52,15 +54,26 @@ public class AntennaStatus extends ACSClient{
 	 * 
 	 * @param _client The client needed by ACSClient
 	 * @param _brokerURL The broker url to ActvieMQ server
+	 * @param Antenna Indicate which antenna get from ACSManager, this information is on $AXIS2_HOME/WebOMCFiles/Antennas file
+	 * and just have the names of monitoring antennas
+	 * Ex:
+	 * 		DV01
+	 * 		DV02
+	 * 		PM03
+	 * 
+	 * @param _devices Indicate the name of the devices that will be returned from ActiveMQ queue, this information is on 
+	 * $AXIS2_HOME/WebOMCFiles/Devices file and just have the names of monitoring devices
+	 * Ex:
+	 * 		DV01_LLC
+	 * 		DV01_FrontEnd
 	 */
-	public AntennaStatus(AdvancedComponentClient _client,String _brokerURL){
+	public AntennaStatus(AdvancedComponentClient _client,String _brokerURL,String[] Antenna, String[] _devices){
 		super(_client);
-		String antennas = getAllAntennas();
-		this.antennasName = antennas.split(",");
+		this.antennasName = Antenna;
 		this.AntennaReferences = new HashMap<String,Antenna>();
 		getAntennaReferences();
 		this.isFirstTime = true;
-		this.antennaActiveMQMessageListener = new AntennaActiveMQMessageListener(_brokerURL);
+		this.antennaActiveMQMessageListener = new AntennaActiveMQMessageListener(_brokerURL,_devices);
 		this.AntennaInfo = new HashMap<String, String>();
 		
 	}
@@ -76,7 +89,7 @@ public class AntennaStatus extends ACSClient{
 	@Override
 	public LinkedList<String> getStatus() {
 		if(this.AntennaReferences.size() < this.antennasName.length && !this.isFirstTime){
-			System.out.println("tratando de obtener nuevas referencias de las antennas ");
+			System.out.println("trying to get new references to the antenna ");
 			getReferencesOfRemainingAntennas();	
 		}
 		if(this.isFirstTime){
@@ -141,20 +154,20 @@ public class AntennaStatus extends ACSClient{
 			} catch (INACTErrorEx e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
-				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\", \"Description\":\"Unable to get information from " + antennaName + " because this references doesn't have this information\"},");
-				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\", \"Description\":\"Unable to get information from " + antennaName + " because this references doesn't have this information\"},");
+				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\", \"Status\":\"Unable to get information from " + antennaName + " because this references doesn't have this information\"},");
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\", \"Status\":\"Unable to get information from " + antennaName + " because this references doesn't have this information\"},");
 				writeInfoMessage("INACTErrorEx when try to get information from antenna " + antennaName);
 			} catch (NullPointerException npe) {
-				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " because there is not reference\"},");
-				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " because there is not reference\"},");
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Status\":\"Unable to get information from " + antennaName + " because there is not reference\"},");
+				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Status\":\"Unable to get information from " + antennaName + " because there is not reference\"},");
 				writeInfoMessage("Null pointer exception when trying to get information from atenna " + antennaName);
 			} catch (org.omg.CORBA.OBJECT_NOT_EXIST ONE){
-				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " probably the container is down\"},");
-				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " probably the container is down\"},");
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Status\":\"Unable to get information from " + antennaName + " probably the container is down\"},");
+				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Status\":\"Unable to get information from " + antennaName + " probably the container is down\"},");
 				writeInfoMessage("Corba Object not exist for atenna " + antennaName + " probably container is down");
 			} catch (org.omg.CORBA.TRANSIENT T){
-				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " unable to connect to the antenna, probably the container is down\"},");
-				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Description\":\"Unable to get information from " + antennaName + " unable to connect to the antenna, probably the container is down\"},");
+				this.AntennaInfo.put(antennaName,"{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Status\":\"Unable to get information from " + antennaName + " unable to connect to the antenna, probably the container is down\"},");
+				report.add("{\"Type\":\"AtennaError\",\"Name\":\"" + antennaName + "\",\"Status\":\"Unable to get information from " + antennaName + " unable to connect to the antenna, probably the container is down\"},");
 				writeInfoMessage("Could'n connect to manager for atenna " + antennaName + " probably container is down");
 			}
 			i++;
@@ -169,7 +182,7 @@ public class AntennaStatus extends ACSClient{
 	 * @return A List of antenna status from ActiveMQ on JSON format
 	 */
 	private LinkedList<String> getStatusFromActiveMQ(){
-		return this.antennaActiveMQMessageListener.getReport();
+		return this.antennaActiveMQMessageListener.getListReport();
 	}
 	
 	/**
@@ -260,18 +273,17 @@ public class AntennaStatus extends ACSClient{
 	}
 	
 	/**
-	 * This method return the name of all antennas that this client will display
-	 * 
-	 * @return A string with the name of all antennas that this client will display, separated by ","
+	 * This method return the array of Antennas names to monitor
+	 * @return An array with each antenna written on $AXIS2_HOME/WebOMCFiles/Antennas
 	 */
-	private String getAllAntennas(){
-		return "DV01,DV02,PM03";
-	}
-	
 	public String[] getAntennaNames(){
 		return this.antennasName;
 	}
-	
+
+	/**
+	 * This method return the array of Devices names to monitor
+	 * @return An array with each device written on $AXIS2_HOME/WebOMCFiles/Devices
+	 */
 	public HashMap<String,String> getAntennaInfo(){
 		return this.AntennaInfo;
 	}

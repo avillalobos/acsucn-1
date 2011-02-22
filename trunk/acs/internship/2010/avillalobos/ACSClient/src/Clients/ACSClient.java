@@ -10,8 +10,9 @@ import alma.acs.component.client.AdvancedComponentClient;
  * and later add a new instance of the extended class to the corresponding list, Online or Offline info.
  * 
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
+ * @see	DeveloperInfo
+ *		The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ * 		my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
  * 		Contact to a.e.v.r.007@gmail.com
  */
 public abstract class ACSClient{
@@ -64,5 +65,13 @@ public abstract class ACSClient{
 	 */
 	public void writeFineMessage(String msg){
 		this.client.getContainerServices().getLogger().info(msg);
+	}
+	/**
+	 * This method make the ping to the Manager
+	 * @return <li> true  : If manager is up   </li>
+	 * 		   <li> false : If manager is down </li>
+	 */
+	protected boolean isAcsOnline(){
+		return this.client.getAcsManagerProxy().pingManager(100);
 	}
 }

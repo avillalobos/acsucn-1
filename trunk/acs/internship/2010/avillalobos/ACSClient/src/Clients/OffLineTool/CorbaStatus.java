@@ -11,11 +11,12 @@ import alma.acs.component.client.AdvancedComponentClient;
  * This class display the corba status, to do that, just try to get the list of initilized services, 
  * if its possible to retrieve this list, then Corba is up, else corba could be on error or Unknown.
  * This way of obtain the corba status was copied from runOMC.
- * 
+ *
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
- * 		Contact to a.e.v.r.007@gmail.com
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class CorbaStatus extends ACSClient {
 
@@ -41,13 +42,13 @@ public class CorbaStatus extends ACSClient {
 		LinkedList<String> report = new LinkedList<String>();
 		try {
 			this.client.getAcsCorba().getORB().list_initial_services();
-			report.add("{\"Type\":\"CorbaStatus\",\"Status\":\"Ok\"},");
+			report.add("{\"Type\":\"CorbaStatus\",\"Name\":\"CorbaStatus\",\"Status\":\"Ok\"},");
 		} catch (SystemException exc) {
 			// org.omg.CORBA.SystemException is what we expect in the "ordinary" error case
-			report.add("{\"Type\":\"CorbaStatus\",\"Status\":\"Error\"},");
+			report.add("{\"Type\":\"CorbaStatus\",\"Name\":\"Corba Error\",\"Status\":\"Error\"},");
 		} catch (Throwable t) {
 			// any other error is not foreseen
-			report.add("{\"Type\":\"CorbaStatus\",\"Status\":\"Unknown\"},");
+			report.add("{\"Type\":\"CorbaStatus\",\"Name\":\"Corba Error\",\"Status\":\"Unknown\"},");
 		}
 		return report;
 	}

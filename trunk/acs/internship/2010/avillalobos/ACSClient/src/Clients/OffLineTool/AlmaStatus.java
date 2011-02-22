@@ -10,7 +10,8 @@ import alma.acs.component.client.AdvancedComponentClient;
  * This class is responsible to "calculate" the Alma status based on the Sub systems status,
  * thats why on the constructor receive a SubsystemsStatus instance. The algorithm to get
  * the status of Alma software was copied from runOMC but is implemented on another way,
- * here obtain the status of each subsystem, the algorithm is the following:
+ * to calculate the status of alma software, this class obtain the status of each subsystem, 
+ * the algorithm is the following:
  * 		1) If any status is on error, then Alma is on error
  * 		2) If any status is on unavailable, then alma is on unavailable
  * 		3) If all status are on shutdown, then alma is on shutdown
@@ -19,12 +20,13 @@ import alma.acs.component.client.AdvancedComponentClient;
  * 		6) If all status are on initializing or shutdown or online or operational, then is starting
  * 		7) If all status are on shutting down or preshutdown or shutdown or operational, then the alma status is stopping
  * 		8) For any another combination, the alma status is transiting
- * 
+ *
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
- * 		Contact to a.e.v.r.007@gmail.com
- */
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
+ */ 
 public class AlmaStatus extends ACSClient {
 
 	/**
@@ -62,7 +64,7 @@ public class AlmaStatus extends ACSClient {
 	public LinkedList<String> getStatus() {
 		// TODO Auto-generated method stub
 		LinkedList<String> report = new LinkedList<String>();
-		report.add("{\"Type\":\"AlmaStatus\",\"Status\":\""+calculateStatus()+"\"}");
+		report.add("{\"Type\":\"AlmaStatus\",\"Name\":\"Alma Status\",\"Status\":\""+calculateStatus()+"\"}");
 		return report;
 	}
 	

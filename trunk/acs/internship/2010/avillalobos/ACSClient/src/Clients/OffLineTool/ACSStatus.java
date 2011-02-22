@@ -7,12 +7,13 @@ import alma.acs.component.client.AdvancedComponentClient;
 
 /**
  * This class is responsible to get the ACS information using offline tools, to do that, just make a ping to the ACS manager,
- * if this method return true, then ACS is up, else ACS is down
- * 
+ * if this method return true, then ACS is up, else ACS is down.
+ *
  * @author Andres Villalobos, 2011 Summerjob, Ingenieria de ejecucion en Computacion e Informatica, Universidad Catolica del norte
- * @see The project twiki http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob
- * 		My dailylog http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools
- * 		Contact to a.e.v.r.007@gmail.com
+ * @see DeveloperInfo
+ *              The project  <a href="http://almasw.hq.eso.org/almasw/bin/view/JAO/OfflineToolsSummerJob">Twiki page</a> and
+ *              my <a href="http://almasw.hq.eso.org/almasw/bin/view/Main/AndresVillalobosDailyLogOfflineTools">Dailylog</a> please
+ *              Contact to a.e.v.r.007@gmail.com
  */
 public class ACSStatus extends ACSClient {
 
@@ -39,19 +40,10 @@ public class ACSStatus extends ACSClient {
 	public LinkedList<String> getStatus() {
 		LinkedList<String> report = new LinkedList<String>();
 		if(isAcsOnline()){
-			report.add("{\"Type:\"ACSStatus\",\"Status\":\"Ok\"}");
+			report.add("{\"Type:\"ACSStatus\",\"Name\":\"ACS Status\",\"Status\":\"Ok\"}");
 		}else{
-			report.add("{\"Type:\"ACSStatus\",\"Status\":\"Down\"}");
+			report.add("{\"Type:\"ACSStatus\",\"Name\":\"ACS Status\",\"Status\":\"Down\"}");
 		}
 		return report;
-	}
-
-	/**
-	 * This method make the ping to the Manager
-	 * @return <li> true  : If manager is up   </li>
-	 * 		   <li> false : If manager is down </li>
-	 */
-	private boolean isAcsOnline(){
-		return this.client.getAcsManagerProxy().pingManager(100);
 	}
 }
