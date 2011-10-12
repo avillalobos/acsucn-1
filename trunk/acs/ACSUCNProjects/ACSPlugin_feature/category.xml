@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/acsucn.eclipse.plugin_1.1.0.jar" id="acsucn.eclipse.plugin" version="1.1.0" os="linux,macosx,win32" nl="en" arch="x86,x86_64">
+      <category name="cl.acsucn.eclipse.plugin"/>
+   </feature>
+   <category-def name="cl.acsucn.eclipse.plugin" label="ACS Eclipse Plugin">
+      <description>
+         This Plugin allow you to work with ACS framework easy.
+      </description>
+   </category-def>
+</site>
