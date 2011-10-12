@@ -1,9 +1,0 @@
-#!/bin/bash
-echo "Starting Test"
-echo "Starting ACS"
-acsutilTATPrologue
-echo "ACSA is Up and Ready"
-
-echo "Starting testContainer"
-acsutilAwaitContainerStart -cpp bilboContainer
-echo " Test finished"
