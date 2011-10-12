@@ -1,6 +1,0 @@
-#!/bin/bash
-
-acsutilTATPrologue
-
-echo "Starting testContainer"
-
