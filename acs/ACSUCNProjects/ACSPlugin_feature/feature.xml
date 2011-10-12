@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="acsucn.eclipse.plugin"
+      label="ACSPlugin"
+      version="1.1.0"
+      plugin="ACSPlugin">
+
+   <description url="http://lca.ucn.cl/~acsucn/cgi-bin/view/Main/EclipsePlugins">
+      This plugin was developed by ACSUCN group
+   </description>
+
+   <copyright url="http://lca.ucn.cl/~acsucn/cgi-bin/view/Main/EclipsePlugins">
+      to be defined...
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <discovery label="ACSUCN group" url="http://lca.ucn.cl/"/>
+   </url>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.ui.ide" version="3.6.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+   </requires>
+
+   <plugin
+         id="ACSPlugin"
+         os="linux,macosx,win32"
+         nl="en"
+         download-size="4"
+         install-size="4"
+         version="1.1.0"
+         unpack="false"/>
+
+</feature>
