@@ -170,10 +170,8 @@ private SelectionListener ButtonListener = new SelectionListener() {
 				cargarMethodList();
 			}else if(e.widget == deleteMethod){
 				finalList.remove(finalList.getSelectionIndex());
-			}else if(e.widget == deleteParam){
-				//lista.remove(lista.getSelectionIndex());
+				cargarMethodList();	
 			}
-				
 			
 		}
 		
@@ -323,6 +321,7 @@ private SelectionListener ButtonListener = new SelectionListener() {
 		listParam.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(MouseEvent e) { 
 				removeParam();
+				cargarMethodList();	
 			}});
 				
 		// Button deleteMethod
@@ -330,11 +329,7 @@ private SelectionListener ButtonListener = new SelectionListener() {
 		deleteMethod.setText("Delete method");
 		deleteMethod.addSelectionListener(ButtonListener);
 		
-		//Button deleteParam
-		/*deleteParam = new Button(container,SWT.PUSH);
-		deleteMethod.setText("Delete method");
-		deleteMethod.addSelectionListener(ButtonListener);*/
-		
+
 		aviso = new Label(container, SWT.NONE);
 		aviso.setText("Must fill in all fields");
 		aviso.setLayoutData(data);
