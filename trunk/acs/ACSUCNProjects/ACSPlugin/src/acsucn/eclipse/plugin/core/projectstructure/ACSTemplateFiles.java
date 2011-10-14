@@ -56,8 +56,8 @@ public class ACSTemplateFiles {
 							//.IDL
 							pathFileAcs = finalPath + "Config/Idl.config";
 							WriteFile(pathFileAcs,path,this.ProjectName,PrototypesMethodsWizardPage.methodList);
-							PrototypesMethodsWizardPage.methodList=null;
 							PrototypesMethodsWizardPage.auxList=null;
+							PrototypesMethodsWizardPage.methodList=null;
 							break;
 						case 3:
 							//.CPP
