@@ -5,12 +5,18 @@
 
 package acsucn.eclipse.plugin.graphics.wizards;
 import java.util.Hashtable;
+import acsucn.eclipse.plugin.graphics.projectpreferences.Properties;
 import java.util.ArrayList;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -19,16 +25,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Combo; 
 import org.eclipse.swt.widgets.List; 
+import org.eclipse.swt.widgets.DirectoryDialog;
 
 
 public class PrototypesMethodsWizardPage extends WizardPage {
 
-	private Button addBtn,addMethodBtn,cleanBtn,deleteMethod,deleteParam;
+	private Button addBtn,addMethodBtn,deleteMethod,deleteParam;
 	private Text nameText,paramText;
-	private List lista,finalList;
+	private List lista,finalList,listParam;
 	private Combo DropListType,DropListReturn,DropVisibility;
     private Label aviso;
-    private Hashtable tableHash = new Hashtable();
 	public static ArrayList methodList = new ArrayList();
 	public static ArrayList auxList = new ArrayList();
 	
@@ -56,7 +62,7 @@ private SelectionListener ButtonListener = new SelectionListener() {
 								aviso.setText("Name invalid,keyword Java");
 							}else{
 								//code addBtn
-								//auxList.clear();
+								auxList.clear();
 								if(finalList.isSelected(finalList.getSelectionIndex())==true){
 									String Parameters = DropListType.getText() + " " + validateString(paramText.getText());
 									if (Parameters.compareTo(" ")!=0){
@@ -75,32 +81,36 @@ private SelectionListener ButtonListener = new SelectionListener() {
 											}
 											
 											for(int x = j+1 ; x < resetMethod.length();x++ ){
-												/*if(auxList.size()==1){
-													break;
-												}*/
-												//else{
 													if (resetMethod.charAt(x)==')'){
 														break;
 													}	
 													temp = temp + resetMethod.charAt(x);
-												//}
 											}
 											
+											//cambia posicion de parametro
+											String paramAux = (String)auxList.get(0);
+											auxList.clear();
 											//reguarda elementos en list
 											String makeWord="";
-											for (int p = 0 ; p < temp.length();p++){
-												if(temp.charAt(p)!=','){
-													makeWord = makeWord + temp.charAt(p);
-												}else{
-													auxList.add(makeWord);
-													makeWord="";
+											String makePal="";
+											int p;
+											if (temp.compareTo(" ")!=0){
+												for (p=0 ; p < temp.length();p++){
+													if(temp.charAt(p)!=','){
+														makeWord = makeWord + temp.charAt(p);
+													}else{
+														auxList.add(makeWord);
+														makeWord="";
+													}
 												}
 											}
 											
-											/*if(auxList.size()<3){
-												if(!temp.equals(" "))
-													auxList.add(temp);
-											*/
+											if(makeWord.compareTo("")!=0){
+												auxList.add(makeWord);
+												makeWord="";
+											}
+											auxList.add(paramAux);
+											paramAux="";
 											
 											for (int i = 0 ; i < auxList.size() ;i++ ){
 												if (auxList.size() > 1){
@@ -121,11 +131,12 @@ private SelectionListener ButtonListener = new SelectionListener() {
 								}else{
 									aviso.setText("First choose a method");
 								}
+								cargarParamList();
 							}
 						}
 					}
 				}
-								
+				cargarMethodList();			
 			}else if(e.widget == addMethodBtn){
 			//code addMethodBtn
 				if(DropListReturn.getText().compareTo("")==0){
@@ -144,33 +155,23 @@ private SelectionListener ButtonListener = new SelectionListener() {
 								methodFinal = DropVisibility.getText() + " " +DropListReturn.getText() + " " + validateString(nameText.getText()) + " ( );";
 								if (methodFinal.compareTo("    (")!=0){
 									finalList.add(methodFinal);
-									methodFinal = "       " + methodFinal;
-									methodList.add(methodFinal);
 								}
 										
 								methodFinal="";
 								DropListReturn.setText("");
 								DropListType.setText("");
 								nameText.setText("");
-								//clean container of the parameters
-								//auxList.clear();
 								aviso.setText("must fill in all fields");
 							}
 							
 						}
 					}
 				}	
-			}else if(e.widget == cleanBtn){
-				nameText.setText("");
-				paramText.setText("");
-				DropListType.setText("");
-				DropListReturn.setText("");
-				lista.removeAll();
-				finalList.removeAll();
+				cargarMethodList();
 			}else if(e.widget == deleteMethod){
 				finalList.remove(finalList.getSelectionIndex());
 			}else if(e.widget == deleteParam){
-				lista.remove(lista.getSelectionIndex());
+				//lista.remove(lista.getSelectionIndex());
 			}
 				
 			
@@ -229,6 +230,11 @@ private SelectionListener ButtonListener = new SelectionListener() {
 		data2.grabExcessHorizontalSpace = true;
 		//data2.grabExcessVerticalSpace= true;
 		
+		GridData data3 = new GridData();
+		data3.horizontalAlignment = GridData.FILL;
+		data3.grabExcessHorizontalSpace = true;
+		data3.grabExcessVerticalSpace= true;
+		
 		// Define Method name
 		Label nameMethod = new Label(container, SWT.NONE);
 		nameText = new Text(container, SWT.BORDER);
@@ -275,6 +281,11 @@ private SelectionListener ButtonListener = new SelectionListener() {
 		finalList= new List(container,SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
 		finalList.setLayoutData(data2);
 		
+		finalList.addMouseListener(new MouseAdapter() {
+			public void mouseDoubleClick(MouseEvent e) { 
+				cargarParamList();
+			}});
+		
 		// Define Parameters
 		Label param = new Label(container, SWT.NONE);
 		paramText = new Text(container, SWT.BORDER);
@@ -304,17 +315,29 @@ private SelectionListener ButtonListener = new SelectionListener() {
 		addBtn = new Button(container,SWT.PUSH);
 		addBtn.setText("Add Param");
 		addBtn.addSelectionListener(ButtonListener);
-				
-		aviso = new Label(container, SWT.NONE);
-		aviso.setText("Must fill in all fields");
-		aviso.setLayoutData(data);
 		
+		//List param
+		listParam= new List(container,SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+		listParam.setLayoutData(data3);
+		
+		listParam.addMouseListener(new MouseAdapter() {
+			public void mouseDoubleClick(MouseEvent e) { 
+				removeParam();
+			}});
+				
 		// Button deleteMethod
 		deleteMethod = new Button(container,SWT.PUSH);
 		deleteMethod.setText("Delete method");
 		deleteMethod.addSelectionListener(ButtonListener);
 		
+		//Button deleteParam
+		/*deleteParam = new Button(container,SWT.PUSH);
+		deleteMethod.setText("Delete method");
+		deleteMethod.addSelectionListener(ButtonListener);*/
 		
+		aviso = new Label(container, SWT.NONE);
+		aviso.setText("Must fill in all fields");
+		aviso.setLayoutData(data);
 		
 	}
 	
@@ -338,20 +361,133 @@ private SelectionListener ButtonListener = new SelectionListener() {
 				palabra.equals("throws")||palabra.equals("class")||palabra.equals("goto")||palabra.equals("protected")||palabra.equals("transient")||palabra.equals("const")||
 				palabra.equals("if")||palabra.equals("public")||palabra.equals("try")||palabra.equals("continue")||palabra.equals("implements")||palabra.equals("return")||
 				palabra.equals("void")||palabra.equals("default")||palabra.equals("import")||palabra.equals("short")||palabra.equals("volatile")||palabra.equals("do")||
-				palabra.equals("instanceof")||palabra.equals("static ")||palabra.equals("while")){
+				palabra.equals("instanceof")||palabra.equals("static ")||palabra.equals("while")||palabra.equals("null")){
 			 return false;
 		}
 		return true;
 	}
 	
-	private ArrayList getHash (String key){
-		return(ArrayList)tableHash.get(key);
+	private void cargarMethodList(){
+		methodList.clear();
+		String method="";
+		for ( int x = 0 ; x < finalList.getItemCount();x++ ){
+			method = "       " + finalList.getItem(x);
+			methodList.add(method);	
+		}
+	}	 
+	
+	private void cargarParamList(){
+		listParam.removeAll();
+		int j;
+		String resetMethod="";
+		String auxResetMethod="";
+		String temp="";
+			if (finalList.getItemCount() != 0){
+				resetMethod = finalList.getItem(finalList.getSelectionIndex());
+				for(j = 0 ; j < resetMethod.length();j++ ){
+					auxResetMethod = auxResetMethod + resetMethod.charAt(j);
+					if (resetMethod.charAt(j)=='('){
+						break;
+					}	
+				}
+				
+				for(int x = j+1 ; x < resetMethod.length();x++ ){
+						if (resetMethod.charAt(x)==')'){
+							break;
+						}	
+						temp = temp + resetMethod.charAt(x);
+				}	
+				//reguarda elementos en list
+				String makeWord="";
+				String makePal="";
+				int p;
+				if (temp.compareTo(" ")!=0){
+					for (p=0 ; p < temp.length();p++){
+						if(temp.charAt(p)!=','){
+							makeWord = makeWord + temp.charAt(p);
+						}else{
+							listParam.add(makeWord);
+							makeWord="";
+						}
+					}
+				}
+				
+				if(makeWord.compareTo("")!=0){
+					listParam.add(makeWord);
+					makeWord="";
+				}
+		}
 	}
 	
-	private void setHash (String key,ArrayList lista){
-		tableHash.put(key, lista);
+	private void removeParam(){
+		String deleteParam = "";
+		deleteParam = listParam.getItem(listParam.getSelectionIndex());
+		
+		auxList.clear();
+		String resetMethod="";
+		String auxResetMethod="";
+		String temp="";
+		int j;
+		
+		if (finalList.getItemCount() != 0){
+			resetMethod = finalList.getItem(finalList.getSelectionIndex());
+			for(j = 0 ; j < resetMethod.length();j++ ){
+				auxResetMethod = auxResetMethod + resetMethod.charAt(j);
+				if (resetMethod.charAt(j)=='('){
+					break;
+				}	
+			}
+			
+			for(int x = j+1 ; x < resetMethod.length();x++ ){
+					if (resetMethod.charAt(x)==')'){
+						break;
+					}	
+					temp = temp + resetMethod.charAt(x);
+			}
+			
+			//reguarda elementos en list
+			String makeWord="";
+			String makePal="";
+			int p;
+			if (temp.compareTo(" ")!=0){
+				for (p=0 ; p < temp.length();p++){
+					if(temp.charAt(p)!=','){
+						makeWord = makeWord + temp.charAt(p);
+					}else{
+						if( makeWord.compareTo(deleteParam)!=0){
+							auxList.add(makeWord);
+						}
+						makeWord="";
+					}
+				}
+			}
+			
+			if(makeWord.compareTo("")!=0){
+				if( makeWord.compareTo(deleteParam)!=0){
+					auxList.add(makeWord);
+				}
+				makeWord="";
+			}
+		
+			for (int i = 0 ; i < auxList.size() ;i++ ){
+				if (auxList.size() > 1){
+					//no es el ultimo elemento de la lista
+					if (i!=auxList.size()-1){
+							auxResetMethod = auxResetMethod +(String)auxList.get(i) + ",";
+					}else{
+							auxResetMethod = auxResetMethod + (String)auxList.get(i) + ");";
+					}
+				}else {
+					auxResetMethod = auxResetMethod + (String)auxList.get(i)+ ");";
+				}						
+			}
+			if(auxList.size()==0)
+				auxResetMethod = auxResetMethod + ");";
+			
+		finalList.setItem(finalList.getSelectionIndex(),auxResetMethod);
+		listParam.remove(listParam.getSelectionIndex());
 	}
-	
-	
-		 
+		
+	}
+		
 }

@@ -12,9 +12,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 
@@ -120,7 +120,7 @@ public class InitialConfigurationsWizarPage extends WizardNewProjectCreationPage
 		createFileteredResources(properties);
 		setControl(container);
 	}
-
+	
 	private void createClassPathsUI(Composite container){
 		// DataGrid
 		GridData data = new GridData();
