@@ -30,9 +30,9 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 
 public class PrototypesMethodsWizardPage extends WizardPage {
 
-	private Button addBtn,addMethodBtn,deleteMethod,deleteParam;
+	private Button addBtn,addMethodBtn,deleteMethod,enableMethod,DisableMethod;
 	private Text nameText,paramText;
-	private List lista,finalList,listParam;
+	private List finalList,listParam;
 	private Combo DropListType,DropListReturn,DropVisibility;
     private Label aviso;
 	public static ArrayList methodList = new ArrayList();
@@ -171,6 +171,17 @@ private SelectionListener ButtonListener = new SelectionListener() {
 			}else if(e.widget == deleteMethod){
 				finalList.remove(finalList.getSelectionIndex());
 				cargarMethodList();	
+			}else if (e.widget==enableMethod){
+				addBtn.setEnabled(true);
+				addMethodBtn.setEnabled(true);
+				deleteMethod.setEnabled(true);
+				nameText.setEnabled(true);
+				paramText.setEnabled(true);
+				finalList.setEnabled(true);
+				listParam.setEnabled(true);
+				DropListType.setEnabled(true);
+				DropListReturn.setEnabled(true);
+				DropVisibility.setEnabled(true);
 			}
 			
 		}
@@ -232,7 +243,7 @@ private SelectionListener ButtonListener = new SelectionListener() {
 		data3.horizontalAlignment = GridData.FILL;
 		data3.grabExcessHorizontalSpace = true;
 		data3.grabExcessVerticalSpace= true;
-		
+				
 		// Define Method name
 		Label nameMethod = new Label(container, SWT.NONE);
 		nameText = new Text(container, SWT.BORDER);
@@ -333,6 +344,22 @@ private SelectionListener ButtonListener = new SelectionListener() {
 		aviso = new Label(container, SWT.NONE);
 		aviso.setText("Must fill in all fields");
 		aviso.setLayoutData(data);
+		
+		//Button add Method
+		enableMethod = new Button(container,SWT.PUSH);
+		enableMethod.setText("Enable write Method");
+		enableMethod.addSelectionListener(ButtonListener);
+		
+		addBtn.setEnabled(false);
+		addMethodBtn.setEnabled(false);
+		deleteMethod.setEnabled(false);
+		nameText.setEnabled(false);
+		paramText.setEnabled(false);
+		finalList.setEnabled(false);
+		listParam.setEnabled(false);
+		DropListType.setEnabled(false);
+		DropListReturn.setEnabled(false);
+		DropVisibility.setEnabled(false);
 		
 	}
 	

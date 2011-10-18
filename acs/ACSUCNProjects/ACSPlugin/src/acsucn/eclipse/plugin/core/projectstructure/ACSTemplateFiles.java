@@ -61,8 +61,8 @@ public class ACSTemplateFiles {
 							break;
 						case 3:
 							//.CPP
-							pathFileAcs = finalPath + "Config/Cpp.config";
-							WriteFile(pathFileAcs,path,this.ProjectName,null);
+							/*pathFileAcs = finalPath + "Config/Cpp.config";
+							WriteFile(pathFileAcs,path,this.ProjectName,null);*/
 							break;
 						case 4:
 							//.XSD
@@ -198,7 +198,7 @@ public class ACSTemplateFiles {
 		case 3:
 			return "/" + this.ProjectName + ".xsd";
 		case 4:
-			return "/" + this.ProjectName + "Impl.cpp";
+			//return "/" + this.ProjectName + "Impl.cpp";
 		case 5:
 			return "/" + this.ProjectName + "Impl.java";
 		}	
